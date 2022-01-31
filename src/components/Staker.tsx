@@ -140,7 +140,6 @@ export default function Staker() {
           );
 
           setStakedSerpents(stakedMintsForUser);
-
           setLoading(false);
         }
       })();

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Message, PublicKey, Transaction } from '@solana/web3.js';
-import { getSerpent, updateSerpent } from '../serpents';
+import { updateSerpent } from '../serpents';
 import { CONNECTION } from '../../../src/config';
 
 type Data = {

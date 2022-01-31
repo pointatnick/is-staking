@@ -44,6 +44,7 @@ export default function DiamondDetails(props: any) {
           sx={{
             fontFamily: 'Metamorphous',
             flex: '1',
+            fontSize: '1.1em',
           }}
           gutterBottom
           variant="h6"
@@ -52,9 +53,9 @@ export default function DiamondDetails(props: any) {
           {name}
         </Typography>
         <Typography
-          sx={{ fontFamily: 'Metamorphous' }}
+          sx={{ fontFamily: 'Metamorphous', fontSize: '1.1em' }}
           gutterBottom
-          variant="h6"
+          variant="body2"
           component="div"
         >
           🐍 {rank}
