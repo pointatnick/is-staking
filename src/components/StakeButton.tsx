@@ -92,6 +92,7 @@ export default function StakeButton(props: any) {
 
           if (success) {
             // TODO: set success instead
+            setLoading(false);
             location.reload();
           } else {
             setLoading(false);

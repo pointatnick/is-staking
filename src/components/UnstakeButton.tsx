@@ -62,7 +62,7 @@ export default function UnstakeButton(props: any) {
 
         // claim ICE
         // TODO: reflect this somewhere
-        const { claimError } = await (
+        const { error: claimError } = await (
           await fetch('/api/staking/unstake', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -159,7 +159,7 @@ export default function UnstakeButton(props: any) {
 
         // claim ICE
         // TODO: reflect this somewhere
-        const { claimError } = await (
+        const { error: claimError } = await (
           await fetch('/api/staking/withdraw', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
