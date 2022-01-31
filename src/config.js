@@ -12,7 +12,7 @@ const config = {
     rpcUrl:
       'https://summer-wispy-frost.solana-mainnet.quiknode.pro/9fde25b3e82544f07c8c045e4e56ae0c30b322d0/',
     iceTokenMintPublicKey: 'icex2Fy2KtXjfiAAUEHLPHu7XKDLvwiyVUPP9PNpSkF',
-    dbCollection: 'TestSerpents',
+    dbCollection: 'Serpents',
   },
 };
 export const RPC_URL = config[process.env.SOLANA_NETWORK].rpcUrl;
