@@ -23,9 +23,7 @@ export default async function handler(
   transaction.addSignature(daoKeypair.publicKey, Buffer.from(daoSignature));
 
   try {
-    await CONNECTION.sendRawTransaction(transaction.serialize(), {
-      skipPreflight: true,
-    });
+    await CONNECTION.sendRawTransaction(transaction.serialize());
     await updateSerpent(mint, new Date(), false);
     res.status(200).json({ error: false });
   } catch (error) {
