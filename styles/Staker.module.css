@@ -1,0 +1,17 @@
+.header {
+  margin-top: 60px;
+  font-size: 3.3rem;
+  font-family: 'Roboto';
+}
+
+.main {
+  min-height: 100vh;
+  padding: 4rem 0;
+}
+
+.infoText {
+  text-align: center;
+  color: white;
+  font-family: 'Cormorant Garamond';
+  font-size: 1.2em;
+}

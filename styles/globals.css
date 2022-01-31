@@ -14,3 +14,18 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.MuiButton-root {
+  color: white !important;
+}
+
+.MuiLinearProgress-root {
+  height: 25px !important;
+  width: 400px !important;
+  margin-top: 1em !important;
+  background-color: rgba(255, 200, 200, 0.5) !important;
+}
+
+.wallet-adapter-button {
+  min-width: fit-content;
+}
