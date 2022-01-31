@@ -33,7 +33,7 @@ export default function Home() {
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <Head>
-            <title>Infinity Serpents Staking</title>
+            <title>The Serpent Lair</title>
             <meta
               name="description"
               content="Stake your Infinity Serpent for $ICE"
