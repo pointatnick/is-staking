@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { PublicKey } from '@solana/web3.js';
+import { Message, PublicKey, Transaction } from '@solana/web3.js';
 import { getSerpent, updateSerpent } from '../serpents';
+import { CONNECTION } from '../../../src/config';
 
 type Data = {
   success: boolean;
@@ -14,12 +15,10 @@ export default async function handler(
     const { publicKey, signature, txMessage, mint } = req.body;
     const user = new PublicKey(publicKey);
     try {
-      //   // reassemble and send
-      //   const tx = Transaction.populate(Message.from(txMessage.data));
-      //   tx.addSignature(user, signature.data);
-      //   await CONNECTION.sendRawTransaction(tx.serialize(), {
-      //     skipPreflight: true,
-      //   });
+      // reassemble and send
+      const tx = Transaction.populate(Message.from(txMessage.data));
+      tx.addSignature(user, signature.data);
+      await CONNECTION.sendRawTransaction(tx.serialize());
 
       // write time of staking
       const serpent = await getSerpent(mint);

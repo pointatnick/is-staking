@@ -29,12 +29,11 @@ export default function UnstakeButton(props: any) {
         wallet
       );
 
-      // Create associated token accounts for my token if they don't exist yet
       const nftFromTokenAccount =
         await mintToken.getOrCreateAssociatedAccountInfo(DAO_PUBLIC_KEY);
 
       const response = await (
-        await fetch('/api/staking/unstake', {
+        await fetch('/api/staking/createUnstakeTransaction', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -55,26 +54,31 @@ export default function UnstakeButton(props: any) {
       try {
         // prompt wallet to sign
         //@ts-ignore
-        await signTransaction(transaction);
-        const serial = transaction.serialize({
-          verifySignatures: false,
-          requireAllSignatures: false,
-        });
-        const tx = await connection.sendRawTransaction(serial);
-        await connection.confirmTransaction(tx, 'confirmed');
-        // mark ice as withdrawn
-        await fetch('/api/ice', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            publicKey: publicKey.toString(),
-            mint: props.mint,
-            nftToTokenAddress: props.tokenAccount,
-          }),
-        });
+        const tx = await signTransaction(transaction);
+        const txMessage = tx.serializeMessage();
+        const signature = tx.signatures.filter(
+          (s) => s.publicKey.toBase58() === publicKey.toBase58()
+        )[0].signature;
+
+        // claim ICE
+        // TODO: reflect this somewhere
+        const { claimError } = await (
+          await fetch('/api/staking/unstake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              txMessage,
+              signature,
+              publicKey: publicKey.toBase58(),
+              mint: props.mint,
+            }),
+          })
+        ).json();
 
         // reload the page to reflect changes
-        location.reload();
+        if (!claimError) {
+          location.reload();
+        }
       } catch (err) {
         console.error(err);
         setLoading(false);

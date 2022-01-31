@@ -26,56 +26,56 @@ export default function StakeButton(props: any) {
         const mint = new PublicKey(props.mint);
 
         try {
-          //   const instructions = [];
-          //   const toTokenAddress = await Token.getAssociatedTokenAddress(
-          //     ASSOCIATED_TOKEN_PROGRAM_ID,
-          //     TOKEN_PROGRAM_ID,
-          //     mint,
-          //     DAO_PUBLIC_KEY
-          //   );
+          const instructions = [];
+          const toTokenAddress = await Token.getAssociatedTokenAddress(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            mint,
+            DAO_PUBLIC_KEY
+          );
 
-          //   // Check if destination associated token account exists
-          //   const toTokenAccount = await connection.getAccountInfo(
-          //     toTokenAddress
-          //   );
-          //   if (toTokenAccount === null) {
-          //     instructions.push(
-          //       Token.createAssociatedTokenAccountInstruction(
-          //         ASSOCIATED_TOKEN_PROGRAM_ID,
-          //         TOKEN_PROGRAM_ID,
-          //         mint,
-          //         toTokenAddress,
-          //         DAO_PUBLIC_KEY,
-          //         publicKey
-          //       )
-          //     );
-          //   }
+          // Check if destination associated token account exists
+          const toTokenAccount = await connection.getAccountInfo(
+            toTokenAddress
+          );
+          if (toTokenAccount === null) {
+            instructions.push(
+              Token.createAssociatedTokenAccountInstruction(
+                ASSOCIATED_TOKEN_PROGRAM_ID,
+                TOKEN_PROGRAM_ID,
+                mint,
+                toTokenAddress,
+                DAO_PUBLIC_KEY,
+                publicKey
+              )
+            );
+          }
 
-          //   instructions.push(
-          //     Token.createTransferInstruction(
-          //       TOKEN_PROGRAM_ID,
-          //       new PublicKey(props.tokenAccount),
-          //       toTokenAddress,
-          //       publicKey,
-          //       [],
-          //       1
-          //     )
-          //   );
+          instructions.push(
+            Token.createTransferInstruction(
+              TOKEN_PROGRAM_ID,
+              new PublicKey(props.tokenAccount),
+              toTokenAddress,
+              publicKey,
+              [],
+              1
+            )
+          );
 
-          //   // create and sign transaction, broadcast, and confirm
-          //   const transaction = new Transaction().add(...instructions);
-          //   transaction.feePayer = publicKey;
-          //   transaction.recentBlockhash = (
-          //     await connection.getRecentBlockhash()
-          //   ).blockhash;
+          // create and sign transaction, broadcast, and confirm
+          const transaction = new Transaction().add(...instructions);
+          transaction.feePayer = publicKey;
+          transaction.recentBlockhash = (
+            await connection.getRecentBlockhash()
+          ).blockhash;
 
-          //   //@ts-ignore
-          //   const signedTx = await signTransaction(transaction);
-          //   console.log(signedTx);
-          //   const txMessage = signedTx.serializeMessage();
-          //   const { signature } = signedTx.signatures.filter(
-          //     (s) => s.publicKey.toBase58() === publicKey.toBase58()
-          //   )[0];
+          //@ts-ignore
+          const signedTx = await signTransaction(transaction);
+          console.log(signedTx);
+          const txMessage = signedTx.serializeMessage();
+          const { signature } = signedTx.signatures.filter(
+            (s) => s.publicKey.toBase58() === publicKey.toBase58()
+          )[0];
 
           const { success } = await (
             await fetch('/api/staking/stake', {
@@ -83,8 +83,8 @@ export default function StakeButton(props: any) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 publicKey: publicKey.toBase58(),
-                // signature,
-                // txMessage,
+                signature,
+                txMessage,
                 mint: props.mint,
               }),
             })

@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PublicKey } from '@solana/web3.js';
-import { getTokenAccountsAndMintsFromWallet } from '../../../src/core/web3';
 import { CONNECTION, METAPLEX_TOKEN_PROGRAM_ID } from '../../../src/config';
 import { getMintAddresses } from '../data/mintAddresses';
 
@@ -44,6 +43,7 @@ export default async function handler(
 ) {
   const user = new PublicKey(req.query.publicKey);
   const serpentMints = await getTokenAccountsAndMintsFromWallet(user);
+  console.log(serpentMints);
 
   // return arweave data
   res.status(200).json({ serpentMints });

@@ -17,7 +17,7 @@ export async function getSerpent(mint: string) {
 export async function updateSerpent(
   mint: string,
   lastStaked: Date,
-  isStaked: true
+  isStaked: boolean
 ) {
   const { db } = await connectToDatabase();
   const updateDoc = {

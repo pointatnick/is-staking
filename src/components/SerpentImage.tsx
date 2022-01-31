@@ -34,7 +34,7 @@ export default function SerpentImage(props: any) {
   ) : (
     <img
       src={image}
-      alt="diamond"
+      alt="serpent"
       style={{
         display: 'block',
         height: 'auto',
