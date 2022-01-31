@@ -90,9 +90,7 @@ export default function Staker() {
             stakedSerpentMints.map(async (item: any) => {
               // for getting metadata from rarityResponse
               const index = mints.indexOf(item.mint);
-              console.log(index);
               const tokenAta = new PublicKey(item.tokenAccount);
-              console.log(tokenAta);
 
               try {
                 // get most recent signature for ATA
@@ -119,7 +117,8 @@ export default function Staker() {
                         name,
                         imageUrl,
                         lastStaked,
-                        iceToPay: ice,
+                        isStaked,
+                        icePerDay,
                       } = allSerpents[index];
                       stakedMintsForUser.push({
                         ...item,
@@ -127,7 +126,8 @@ export default function Staker() {
                         name,
                         imageUrl,
                         lastStaked,
-                        ice,
+                        isStaked,
+                        icePerDay,
                       });
                       break;
                     }
@@ -184,7 +184,6 @@ export default function Staker() {
             time={lastStaked}
             name={name}
             rank={rank}
-            ice={icePerDay}
             icePerDay={icePerDay}
             staked={isStaked}
           />

@@ -27,7 +27,7 @@ export default function DiamondDetails(props: any) {
         clearInterval(timer);
       }
     };
-  }, [time]);
+  }, [time, icePerSecond, staked, stakedDate]);
 
   return (
     <div

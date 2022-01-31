@@ -84,14 +84,7 @@ export default function UnstakeButton(props: any) {
         setLoading(false);
       }
     }
-  }, [
-    publicKey,
-    connection,
-    props.mint,
-    props.tokenAccount,
-    signTransaction,
-    wallet,
-  ]);
+  }, [publicKey, connection, props.mint, props.tokenAccount, signTransaction]);
 
   const onClaim = useCallback(async () => {
     setLoading(true);

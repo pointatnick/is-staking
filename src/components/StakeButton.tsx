@@ -103,7 +103,7 @@ export default function StakeButton(props: any) {
         }
       }
     })();
-  }, [publicKey, connection, signTransaction]);
+  }, [publicKey, connection, signTransaction, props.mint, props.tokenAccount]);
 
   return (
     <Box sx={{ width: '100%' }}>
