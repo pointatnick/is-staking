@@ -9,4 +9,5 @@ export type Serpent = {
   rarity: number;
   rank: number;
   icePerDay: number;
+  staker: string;
 };
