@@ -21,7 +21,7 @@ export default async function handler(
       await CONNECTION.sendRawTransaction(tx.serialize());
 
       // write time of staking
-      await updateSerpent(mint, new Date(), true);
+      await updateSerpent(mint, new Date(), true, publicKey);
 
       res.status(200).json({ success: true });
     } catch (error) {

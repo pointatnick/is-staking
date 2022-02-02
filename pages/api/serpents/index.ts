@@ -17,13 +17,15 @@ export async function getSerpent(mint: string) {
 export async function updateSerpent(
   mint: string,
   lastStaked: Date,
-  isStaked: boolean
+  isStaked: boolean,
+  staker: string
 ) {
   const { db } = await connectToDatabase();
   const updateDoc = {
     $set: {
       lastStaked,
       isStaked,
+      staker,
     },
   };
   await db

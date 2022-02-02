@@ -24,7 +24,7 @@ export default async function handler(
 
   try {
     await CONNECTION.sendRawTransaction(transaction.serialize());
-    await updateSerpent(mint, new Date(), true);
+    await updateSerpent(mint, new Date(), true, publicKey);
     res.status(200).json({ error: false });
   } catch (error) {
     console.error(error);
