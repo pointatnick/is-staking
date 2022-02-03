@@ -84,7 +84,14 @@ export default function UnstakeButton(props: any) {
         setLoading(false);
       }
     }
-  }, [publicKey, connection, props.mint, props.tokenAccount, signTransaction]);
+  }, [
+    publicKey,
+    connection,
+    props.mint,
+    props.tokenAccount,
+    signTransaction,
+    wallet,
+  ]);
 
   const onClaim = useCallback(async () => {
     setLoading(true);
@@ -181,7 +188,14 @@ export default function UnstakeButton(props: any) {
         setLoading(false);
       }
     }
-  }, [publicKey, connection, props.mint, props.tokenAccount, signTransaction]);
+  }, [
+    publicKey,
+    connection,
+    props.mint,
+    props.tokenAccount,
+    signTransaction,
+    wallet,
+  ]);
 
   return (
     <Box sx={{ width: '100%' }}>
