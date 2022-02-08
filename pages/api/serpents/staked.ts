@@ -20,6 +20,15 @@ export async function getAllStakedSerpents() {
   return serpents;
 }
 
+export async function getStakedSerpentsForUser(publicKey: string) {
+  const { db } = await connectToDatabase();
+  const serpents = await db
+    .collection(DB_COLLECTION)
+    .find({ isStaked: true, staker: publicKey })
+    .toArray();
+  return serpents;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -37,6 +46,9 @@ export default async function handler(
   );
 
   const stakedSerpents = await getAllStakedSerpents();
+
+  const userStakedSerpents = await getStakedSerpentsForUser(user.toBase58());
+  console.log(userStakedSerpents);
 
   res.status(200).json({ stakedSerpentMints: serpentMints, stakedSerpents });
 }
