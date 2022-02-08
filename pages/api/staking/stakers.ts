@@ -15,11 +15,20 @@ export async function getAllStakers() {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<string[] | null>
+  res: NextApiResponse<{ [key: string]: number } | null>
 ) {
   try {
     const stakers = await getAllStakers();
-    res.status(200).json(stakers);
+    let stakersDict: { [key: string]: number } = {};
+    stakers.forEach((staker: string) => {
+      if (stakersDict[staker]) {
+        stakersDict[staker] += 1;
+      } else {
+        stakersDict[staker] = 1;
+      }
+    });
+
+    res.status(200).json(stakersDict);
   } catch (error) {
     res.status(500).json(null);
   }
