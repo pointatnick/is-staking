@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import Skeleton from '@mui/material/Skeleton';
+import Image from 'next/image';
+import Box from '@mui/material/Box';
 
 export default function SerpentImage(props: any) {
   const [loading, setLoading] = useState(true);
@@ -22,26 +24,27 @@ export default function SerpentImage(props: any) {
     })();
   }, [props.image]);
 
-  return loading ? (
-    <Skeleton
-      variant="rectangular"
+  return (
+    <Box
       sx={{
-        maxWidth: '90%',
-        margin: '0 auto',
-        height: '300px',
-      }}
-    ></Skeleton>
-  ) : (
-    <img
-      src={image}
-      alt="serpent"
-      style={{
         display: 'block',
-        height: 'auto',
-        margin: '0 auto',
-        border: '3px solid #00000077',
-        maxWidth: '90%',
+        width: '156px',
+        height: '156px',
+        border: '3px solid',
+        borderColor: '#00000055',
       }}
-    ></img>
+    >
+      {loading ? (
+        <Skeleton
+          variant="rectangular"
+          sx={{
+            width: '150px',
+            height: '150px',
+          }}
+        ></Skeleton>
+      ) : (
+        <Image src={image} alt="serpent" width="150" height="150" />
+      )}
+    </Box>
   );
 }

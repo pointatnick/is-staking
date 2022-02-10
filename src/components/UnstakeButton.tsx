@@ -202,25 +202,10 @@ export default function UnstakeButton(props: any) {
       {loading ? (
         <LoadingProgress />
       ) : (
-        <Box sx={{ width: '100%', display: 'flex' }}>
+        <Box sx={{ width: '100%' }}>
           <Button
             fullWidth
-            sx={{
-              display: 'block',
-              margin: '0 auto',
-              padding: '1em 0',
-            }}
-            onClick={onClaim}
-          >
-            Claim $ICE
-          </Button>
-          <Button
-            fullWidth
-            sx={{
-              display: 'block',
-              margin: '0 auto',
-              padding: '1em 0',
-            }}
+            sx={{ display: 'block', backgroundColor: 'secondary.main' }}
             onClick={onUnstake}
           >
             Unstake

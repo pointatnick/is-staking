@@ -30,13 +30,13 @@ export default function DiamondDetails(props: any) {
   }, [time, icePerSecond, staked, stakedDate]);
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         color: 'white',
-        display: 'block',
-        margin: '1em auto 0 auto',
-        padding: '1em',
-        background: '#00000044',
+        padding: '2em 1em',
+        backgroundColor: '#00000055',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Box sx={{ display: 'flex' }}>
@@ -44,7 +44,10 @@ export default function DiamondDetails(props: any) {
           sx={{
             fontFamily: 'Metamorphous',
             flex: '1',
-            fontSize: '1.1em',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            overflowX: 'hidden',
+            fontSize: '1em',
           }}
           gutterBottom
           variant="h6"
@@ -53,7 +56,7 @@ export default function DiamondDetails(props: any) {
           {name}
         </Typography>
         <Typography
-          sx={{ fontFamily: 'Metamorphous', fontSize: '1.1em' }}
+          sx={{ fontFamily: 'Metamorphous' }}
           gutterBottom
           variant="body2"
           component="div"
@@ -64,7 +67,7 @@ export default function DiamondDetails(props: any) {
       {time ? (
         <Box>
           <Typography
-            sx={{ fontFamily: 'Cormorant Garamond', fontSize: '1.2em' }}
+            sx={{ fontFamily: 'Cormorant Garamond', fontSize: '1em' }}
             variant="body2"
           >
             <span style={{ fontFamily: 'Metamorphous', fontSize: '0.8em' }}>
@@ -74,6 +77,6 @@ export default function DiamondDetails(props: any) {
           </Typography>
         </Box>
       ) : null}
-    </div>
+    </Box>
   );
 }
