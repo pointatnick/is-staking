@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { DB_COLLECTION } from '../../../src/config';
+import { SERPENTS_COLLECTION } from '../../../src/config';
 import { connectToDatabase } from '../../../util/mongodb';
 import { Serpent } from '../types';
 
 export async function getAllStakers() {
-  const { db } = await connectToDatabase();
+  const { serpentDb: db } = await connectToDatabase();
   const serpentsWithStakers = await db
-    .collection(DB_COLLECTION)
+    .collection(SERPENTS_COLLECTION)
     .find({ staker: { $ne: null } })
     .toArray();
 

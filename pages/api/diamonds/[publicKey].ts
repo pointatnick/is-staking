@@ -1,12 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PublicKey } from '@solana/web3.js';
 import { CONNECTION, METAPLEX_TOKEN_PROGRAM_ID } from '../../../src/config';
-import { getMintAddresses } from '../data/serpentMintAddresses';
+import { getMintAddresses } from '../data/diamondMintAddresses';
 
-export async function getTokenAccountsAndMintsFromWallet(
-  publicKey: PublicKey,
-  present = 1
-) {
+export async function getDiamondsFromWallet(publicKey: PublicKey, present = 1) {
   const mintAddresses = await getMintAddresses();
   // get tokens from wallet
   const tokenAccounts = (
@@ -26,25 +23,21 @@ export async function getTokenAccountsAndMintsFromWallet(
           account.account.data.parsed.info.tokenAmount.uiAmount === present
       )
       // get the mint address
-      .map((account) => ({
-        mint: account.account.data.parsed.info.mint,
-        tokenAccount: account.pubkey.toBase58(),
-      }))
+      .map((account) => account.account.data.parsed.info.mint)
   );
 }
 
-type Data = {
-  serpentMints: { mint: string; tokenAccount: string }[];
+export type Data = {
+  numStaked: number;
 };
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const user = new PublicKey(req.query.publicKey);
-  const serpentMints = await getTokenAccountsAndMintsFromWallet(user);
-  console.log(serpentMints);
+  const { publicKey } = req.query;
+  const user = new PublicKey(publicKey);
+  const diamonds = await getDiamondsFromWallet(user);
 
-  // return arweave data
-  res.status(200).json({ serpentMints });
+  res.status(200).json({ numStaked: diamonds.length });
 }

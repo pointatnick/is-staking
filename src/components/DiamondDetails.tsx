@@ -3,31 +3,7 @@ import Box from '@mui/material/Box';
 import { useState, useEffect } from 'react';
 
 export default function DiamondDetails(props: any) {
-  const { icePerDay, time, name, rank, staked } = props;
-  const [iceAccrued, setIceAccrued] = useState(0);
-  const icePerSecond = icePerDay / 24 / 60 / 60;
-  const stakedDate = Date.parse(time);
-
-  useEffect(() => {
-    let timer: any;
-    if (staked) {
-      timer = setInterval(() => {
-        const nowDate = new Date().toISOString();
-        const now = Date.parse(nowDate);
-        const diff = now - stakedDate;
-
-        // use diff to calculate ICE so far
-        const seconds = Math.floor(diff / 1000);
-        const iceAccrued = icePerSecond * seconds;
-        setIceAccrued(iceAccrued);
-      }, 1000 /* one second */);
-    }
-    return function cleanup() {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
-  }, [time, icePerSecond, staked, stakedDate]);
+  const { iceToCollect, name, rank, staked } = props;
 
   return (
     <Box
@@ -37,7 +13,7 @@ export default function DiamondDetails(props: any) {
         backgroundColor: '#00000055',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '118.06px',
+        height: '118.06px',
       }}
     >
       <Box sx={{ display: 'flex' }}>
@@ -62,17 +38,17 @@ export default function DiamondDetails(props: any) {
           variant="body2"
           component="div"
         >
-          🐍 {rank}
+          💎 {rank}
         </Typography>
       </Box>
-      {time ? (
+      {staked ? (
         <Box>
           <Typography
             sx={{ fontFamily: 'Cormorant Garamond', fontSize: '1em' }}
             variant="body2"
           >
             <span style={{ fontFamily: 'Metamorphous', fontSize: '0.8em' }}>
-              {iceAccrued.toFixed(3)}
+              {iceToCollect.toFixed(3)}
             </span>{' '}
             ICE to collect
           </Typography>

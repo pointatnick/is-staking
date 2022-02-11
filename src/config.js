@@ -6,13 +6,15 @@ const config = {
     rpcUrl:
       'https://spring-billowing-silence.solana-devnet.quiknode.pro/965b0d3f1f825076d38ac1fb05fae81366ce8ada/',
     iceTokenMintPublicKey: '3dymLByZmhxmf2quguTtaQmJhSdtJU3LDRkvZ6U7bBbh',
-    dbCollection: 'TestSerpents',
+    serpentsCollection: 'TestSerpents',
+    diamondsCollection: 'diamonds',
   },
   'mainnet-beta': {
     rpcUrl:
       'https://summer-wispy-frost.solana-mainnet.quiknode.pro/9fde25b3e82544f07c8c045e4e56ae0c30b322d0/',
     iceTokenMintPublicKey: 'icex2Fy2KtXjfiAAUEHLPHu7XKDLvwiyVUPP9PNpSkF',
-    dbCollection: 'Serpents',
+    serpentsCollection: 'Serpents',
+    diamondsCollection: 'diamonds',
   },
 };
 export const RPC_URL = config[process.env.SOLANA_NETWORK].rpcUrl;
@@ -30,4 +32,7 @@ export const METAPLEX_TOKEN_PROGRAM_ID = new PublicKey(
   metaplexConfig.programs.token
 );
 export const S3_KEY = config[process.env.SOLANA_NETWORK].s3RarityFile;
-export const DB_COLLECTION = config[process.env.SOLANA_NETWORK].dbCollection;
+export const SERPENTS_COLLECTION =
+  config[process.env.SOLANA_NETWORK].serpentsCollection;
+export const DIAMONDS_COLLECTION =
+  config[process.env.SOLANA_NETWORK].diamondsCollection;

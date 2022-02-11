@@ -1,17 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { DB_COLLECTION } from '../../../src/config';
+import { SERPENTS_COLLECTION } from '../../../src/config';
 import { connectToDatabase } from '../../../util/mongodb';
 import type { Serpent } from '../types';
 
 export async function getAllSerpents() {
-  const { db } = await connectToDatabase();
-  const serpents = await db.collection(DB_COLLECTION).find({}).toArray();
+  const { serpentDb: db } = await connectToDatabase();
+  const serpents = await db.collection(SERPENTS_COLLECTION).find({}).toArray();
   return serpents;
 }
 
 export async function getSerpent(mint: string) {
-  const { db } = await connectToDatabase();
-  return await db.collection(DB_COLLECTION).findOne({ mint });
+  const { serpentDb: db } = await connectToDatabase();
+  return await db.collection(SERPENTS_COLLECTION).findOne({ mint });
 }
 
 export async function updateSerpent(
@@ -20,7 +20,7 @@ export async function updateSerpent(
   isStaked: boolean,
   staker: string | null
 ) {
-  const { db } = await connectToDatabase();
+  const { serpentDb: db } = await connectToDatabase();
   const updateDoc = {
     $set: {
       lastStaked,
@@ -29,7 +29,7 @@ export async function updateSerpent(
     },
   };
   await db
-    .collection(DB_COLLECTION)
+    .collection(SERPENTS_COLLECTION)
     .updateOne({ mint }, updateDoc, { upsert: true });
 }
 

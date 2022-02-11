@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PublicKey } from '@solana/web3.js';
-import { DAO_PUBLIC_KEY, DB_COLLECTION } from '../../../src/config';
+import { DAO_PUBLIC_KEY, SERPENTS_COLLECTION } from '../../../src/config';
 import { getTokenAccountsAndMintsFromWallet } from './owned';
 import { getSerpentsFromWallet } from './[publicKey]';
 import { connectToDatabase } from '../../../util/mongodb';
@@ -12,9 +12,9 @@ type Data = {
 };
 
 export async function getAllStakedSerpents() {
-  const { db } = await connectToDatabase();
+  const { serpentDb: db } = await connectToDatabase();
   const serpents = await db
-    .collection(DB_COLLECTION)
+    .collection(SERPENTS_COLLECTION)
     .find({ isStaked: true })
     .toArray();
   return serpents;

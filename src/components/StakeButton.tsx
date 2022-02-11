@@ -113,11 +113,7 @@ export default function StakeButton(props: any) {
       ) : (
         <Button
           fullWidth
-          sx={{
-            display: 'block',
-            margin: '0 auto',
-            padding: '1em 0',
-          }}
+          sx={{ display: 'block', backgroundColor: 'secondary.main' }}
           onClick={handleClick}
         >
           Stake

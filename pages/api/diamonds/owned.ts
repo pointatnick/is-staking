@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PublicKey } from '@solana/web3.js';
 import { CONNECTION, METAPLEX_TOKEN_PROGRAM_ID } from '../../../src/config';
-import { getMintAddresses } from '../data/serpentMintAddresses';
+import { getMintAddresses } from '../data/diamondMintAddresses';
 
 export async function getTokenAccountsAndMintsFromWallet(
   publicKey: PublicKey,
@@ -34,7 +34,7 @@ export async function getTokenAccountsAndMintsFromWallet(
 }
 
 type Data = {
-  serpentMints: { mint: string; tokenAccount: string }[];
+  diamondMints: { mint: string; tokenAccount: string }[];
 };
 
 export default async function handler(
@@ -42,9 +42,9 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const user = new PublicKey(req.query.publicKey);
-  const serpentMints = await getTokenAccountsAndMintsFromWallet(user);
-  console.log(serpentMints);
+  const diamondMints = await getTokenAccountsAndMintsFromWallet(user);
+  console.log(diamondMints);
 
   // return arweave data
-  res.status(200).json({ serpentMints });
+  res.status(200).json({ diamondMints });
 }

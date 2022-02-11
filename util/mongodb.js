@@ -1,10 +1,12 @@
 import { MongoClient } from 'mongodb';
 
 let uri = process.env.MONGODB_URI;
-let dbName = process.env.MONGODB_DB;
+let serpentDbName = process.env.SERPENTS_DB;
+let diamondDbName = process.env.DIAMONDS_DB;
 
 let cachedClient = null;
-let cachedDb = null;
+let cachedSerpentDb = null;
+let cachedDiamondDb = null;
 
 if (!uri) {
   throw new Error(
@@ -12,26 +14,37 @@ if (!uri) {
   );
 }
 
-if (!dbName) {
+if (!serpentDbName) {
   throw new Error(
-    'Please define the MONGODB_DB environment variable inside .env.local'
+    'Please define the SERPENT_DB environment variable inside .env.local'
+  );
+}
+
+if (!diamondDbName) {
+  throw new Error(
+    'Please define the DIAMOND_DB environment variable inside .env.local'
   );
 }
 
 export async function connectToDatabase() {
-  if (cachedClient && cachedDb) {
-    return { client: cachedClient, db: cachedDb };
+  if (cachedClient && cachedSerpentDb && cachedDiamondDb) {
+    return {
+      client: cachedClient,
+      serpentDb: cachedSerpentDb,
+      diamondDb: cachedDiamondDb,
+    };
   }
 
   const client = await MongoClient.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
-
-  const db = await client.db(dbName);
+  const serpentDb = await client.db(serpentDbName);
+  const diamondDb = await client.db(diamondDbName);
 
   cachedClient = client;
-  cachedDb = db;
+  cachedSerpentDb = serpentDb;
+  cachedDiamondDb = diamondDb;
 
-  return { client, db };
+  return { client, serpentDb, diamondDb };
 }

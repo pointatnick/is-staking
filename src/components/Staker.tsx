@@ -2,23 +2,26 @@ import styles from '../../styles/Staker.module.css';
 import { useEffect, useState } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import SerpentItem from './SerpentItem';
 import SerpentImage from './SerpentImage';
 import SerpentDetails from './SerpentDetails';
 import StakeButton from './StakeButton';
 import UnstakeButton from './UnstakeButton';
 import HeroLayout from './HeroLayout';
-import Skeleton from '@mui/material/Skeleton';
 import { PublicKey } from '@solana/web3.js';
 import { DAO_PUBLIC_KEY } from '../config';
-import { Serpent } from '../../pages/api/types';
+import { Diamond, Serpent } from '../../pages/api/types';
+import DiamondDetails from './DiamondDetails';
 
 export default function Staker() {
   // todo: write type
   const [serpents, setSerpents] = useState<any[]>([]);
   // todo: write type
   const [stakedSerpents, setStakedSerpents] = useState<any[]>([]);
+  // todo: write type
+  const [diamonds, setDiamonds] = useState<any[]>([]);
+  // todo: write type
+  const [stakedDiamonds, setStakedDiamonds] = useState<any[]>([]);
   const [totalStaked, setTotalStaked] = useState(0);
   const [loading, setLoading] = useState(true);
   const { connection } = useConnection();
@@ -33,6 +36,105 @@ export default function Staker() {
       setTotalStaked(numStaked);
     })();
   }, []);
+
+  // get diamonds
+  useEffect(() => {
+    if (publicKey) {
+      (async () => {
+        setLoading(true);
+
+        const { diamonds: allDiamonds } = await (
+          await fetch(`/api/diamonds`)
+        ).json();
+        const mints = allDiamonds.map((item: Diamond) => item.mint);
+
+        const { diamondMints } = await (
+          await fetch(`/api/diamonds/owned?publicKey=${publicKey.toString()}`)
+        ).json();
+
+        // get serpents from user
+        setDiamonds(
+          diamondMints.map((item: any) => {
+            // for getting metadata from allSerpents
+            const index = mints.indexOf(item.mint);
+            const { rank, name, imageUrl } = allDiamonds[index];
+
+            return {
+              ...item,
+              rank,
+              name,
+              imageUrl,
+            };
+          })
+        );
+
+        const { stakedDiamondMints, stakedDiamonds: allStakedDiamonds } =
+          await (
+            await fetch(
+              `/api/diamonds/staked?publicKey=${publicKey.toString()}`
+            )
+          ).json();
+        console.log(allStakedDiamonds);
+        const stakedMintsForUser: any[] = [];
+
+        await Promise.all(
+          stakedDiamondMints.map(async (item: any) => {
+            // for getting metadata from rarityResponse
+            const index = mints.indexOf(item.mint);
+            const tokenAta = new PublicKey(item.tokenAccount);
+
+            try {
+              // get most recent signature for ATA
+              const signature = (
+                await connection.getSignaturesForAddress(tokenAta)
+              )[0].signature;
+              // get tx data
+              const tx = await connection.getConfirmedTransaction(
+                signature,
+                'confirmed'
+              );
+
+              // determine if diamond ended up with DAO in most recent ATA transaction
+              if (tx?.meta?.postTokenBalances) {
+                for (const balance of tx.meta.postTokenBalances) {
+                  if (
+                    balance.owner === DAO_PUBLIC_KEY.toString() &&
+                    balance.uiTokenAmount.uiAmount === 1
+                  ) {
+                    // found a diamond in the DAO from this ATA
+                    // get metadata
+                    const {
+                      rank,
+                      name,
+                      imageUrl,
+                      lastStaked,
+                      isStaked,
+                      iceToCollect,
+                    } = allDiamonds[index];
+                    stakedMintsForUser.push({
+                      ...item,
+                      rank,
+                      name,
+                      imageUrl,
+                      lastStaked,
+                      isStaked,
+                      iceToCollect,
+                    });
+                    break;
+                  }
+                }
+              }
+            } catch (err) {
+              console.error(item.mint, err);
+            }
+          })
+        );
+
+        setStakedDiamonds(stakedMintsForUser);
+        setLoading(false);
+      })();
+    }
+  }, [publicKey, connection, wallet]);
 
   // get serpents
   useEffect(() => {
@@ -140,8 +242,10 @@ export default function Staker() {
     .map(({ name, imageUrl, rank, mint, tokenAccount }) => (
       <SerpentItem key={name}>
         <SerpentImage image={imageUrl} />
-        <SerpentDetails name={name} rank={rank} />
-        <StakeButton mint={mint} tokenAccount={tokenAccount} />
+        <Box sx={{ flex: 1 }}>
+          <SerpentDetails name={name} rank={rank} />
+          <StakeButton mint={mint} tokenAccount={tokenAccount} />
+        </Box>
       </SerpentItem>
     ));
 
@@ -179,6 +283,56 @@ export default function Staker() {
         </SerpentItem>
       )
     );
+
+  const sortedDiamonds = diamonds
+    .sort((a, b) => {
+      return a.rank > b.rank ? 1 : -1;
+    })
+    .map(({ name, imageUrl, rank, mint, tokenAccount }) => (
+      <SerpentItem key={name}>
+        <SerpentImage image={imageUrl} />
+        <Box sx={{ flex: 1 }}>
+          <SerpentDetails name={name} rank={rank} />
+          <StakeButton mint={mint} tokenAccount={tokenAccount} />
+        </Box>
+      </SerpentItem>
+    ));
+
+  const sortedStakedDiamonds = stakedDiamonds
+    .sort((a, b) => {
+      return a.rank > b.rank ? 1 : -1;
+    })
+    .map(
+      ({
+        mint,
+        imageUrl,
+        name,
+        rank,
+        iceToCollect,
+        tokenAccount,
+        lastStaked,
+        isStaked,
+      }) => (
+        <SerpentItem key={name}>
+          <SerpentImage image={imageUrl} />
+          <Box sx={{ flex: 1 }}>
+            <DiamondDetails
+              time={lastStaked}
+              name={name}
+              rank={rank}
+              iceToCollect={iceToCollect}
+              staked={isStaked}
+            />
+            <UnstakeButton
+              mint={mint}
+              name={name}
+              tokenAccount={tokenAccount}
+            />
+          </Box>
+        </SerpentItem>
+      )
+    );
+  console.log(stakedDiamonds);
 
   return (
     <Box
@@ -228,8 +382,8 @@ export default function Staker() {
                     gap: '24px',
                   }}
                 >
-                  {sortedSerpents}
-                  {sortedStakedSerpents}
+                  {sortedDiamonds}
+                  {sortedStakedDiamonds}
                 </Box>
               </Box>
             </Box>

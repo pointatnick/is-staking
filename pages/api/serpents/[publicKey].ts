@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PublicKey } from '@solana/web3.js';
 import { CONNECTION, METAPLEX_TOKEN_PROGRAM_ID } from '../../../src/config';
-import { getMintAddresses } from '../data/mintAddresses';
+import { getMintAddresses } from '../data/serpentMintAddresses';
 
 export async function getSerpentsFromWallet(publicKey: PublicKey, present = 1) {
   const mintAddresses = await getMintAddresses();
