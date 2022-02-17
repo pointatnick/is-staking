@@ -8,6 +8,7 @@ const config = {
     iceTokenMintPublicKey: '3dymLByZmhxmf2quguTtaQmJhSdtJU3LDRkvZ6U7bBbh',
     serpentsCollection: 'TestSerpents',
     diamondsCollection: 'diamonds',
+    pairsCollection: 'test_paired_serpents',
   },
   'mainnet-beta': {
     rpcUrl:
@@ -15,6 +16,7 @@ const config = {
     iceTokenMintPublicKey: 'icex2Fy2KtXjfiAAUEHLPHu7XKDLvwiyVUPP9PNpSkF',
     serpentsCollection: 'Serpents',
     diamondsCollection: 'diamonds',
+    pairsCollection: 'test_paired_serpents',
   },
 };
 export const RPC_URL = config[process.env.SOLANA_NETWORK].rpcUrl;
@@ -34,5 +36,7 @@ export const METAPLEX_TOKEN_PROGRAM_ID = new PublicKey(
 export const S3_KEY = config[process.env.SOLANA_NETWORK].s3RarityFile;
 export const SERPENTS_COLLECTION =
   config[process.env.SOLANA_NETWORK].serpentsCollection;
+export const PAIRS_COLLECTION =
+  config[process.env.SOLANA_NETWORK].pairsCollection;
 export const DIAMONDS_COLLECTION =
   config[process.env.SOLANA_NETWORK].diamondsCollection;

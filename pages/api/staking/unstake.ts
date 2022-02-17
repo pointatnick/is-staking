@@ -25,6 +25,7 @@ export default async function handler(
   try {
     await CONNECTION.sendRawTransaction(transaction.serialize());
     await updateSerpent(mint, new Date(), false, null);
+    // TODO: check if pairedSerpent, in that case, set isPaired to false and zero out iceToCollect
     res.status(200).json({ error: false });
   } catch (error) {
     console.error(error);

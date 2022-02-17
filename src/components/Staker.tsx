@@ -22,18 +22,29 @@ export default function Staker() {
   const [diamonds, setDiamonds] = useState<any[]>([]);
   // todo: write type
   const [stakedDiamonds, setStakedDiamonds] = useState<any[]>([]);
-  const [totalStaked, setTotalStaked] = useState(0);
+  const [totalSerpentsStaked, setTotalSerpentsStaked] = useState(0);
+  const [totalDiamondsStaked, setTotalDiamondsStaked] = useState(0);
   const [loading, setLoading] = useState(true);
   const { connection } = useConnection();
   const { publicKey, wallet } = useWallet();
 
-  // get total staked
+  // get total serpents staked
   useEffect(() => {
     (async () => {
       const { numStaked } = await (
         await fetch(`/api/serpents/totalStaked`)
       ).json();
-      setTotalStaked(numStaked);
+      setTotalSerpentsStaked(numStaked);
+    })();
+  }, []);
+
+  // get total diamonds staked
+  useEffect(() => {
+    (async () => {
+      const { numStaked } = await (
+        await fetch(`/api/diamonds/totalStaked`)
+      ).json();
+      setTotalDiamondsStaked(numStaked);
     })();
   }, []);
 
@@ -332,7 +343,6 @@ export default function Staker() {
         </SerpentItem>
       )
     );
-  console.log(stakedDiamonds);
 
   return (
     <Box
@@ -343,7 +353,10 @@ export default function Staker() {
         backgroundAttachment: 'fixed',
       }}
     >
-      <HeroLayout stakedCount={totalStaked} ownerStaked={stakedSerpents} />
+      <HeroLayout
+        diamondStakedCount={totalDiamondsStaked}
+        serpentStakedCount={totalSerpentsStaked}
+      />
       <Box component="main" className={styles.main}>
         {publicKey ? (
           loading ? null : (

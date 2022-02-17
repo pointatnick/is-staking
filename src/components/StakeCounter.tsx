@@ -2,8 +2,6 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
-const TOTAL_SUPPLY = 3333;
-
 type LinearProgressWithLabelProps = {
   /**
    * The value of the progress indicator for the determinate and buffer variants.
@@ -11,20 +9,22 @@ type LinearProgressWithLabelProps = {
    */
   value: number;
   numStaked: number;
+  totalSupply: number;
 };
 
 type LinearWithValueLabelProps = {
   stakedCount: number;
+  totalSupply: number;
 };
 
 function LinearProgressWithLabel(props: LinearProgressWithLabelProps) {
-  const { numStaked, ...rest } = props;
+  const { numStaked, totalSupply, ...rest } = props;
   return (
     <Box sx={{ alignItems: 'center' }}>
       <Box sx={{ width: '100%' }}>
         <LinearProgress
           sx={{
-            minWidth: '550px',
+            minWidth: '500px',
             '& .MuiLinearProgress-bar': {
               background:
                 'linear-gradient(90deg, rgba(50,0,0,1) 0%, rgba(200,0,0,1) 100%)',
@@ -40,7 +40,7 @@ function LinearProgressWithLabel(props: LinearProgressWithLabelProps) {
           variant="body2"
           color="white"
         >
-          {numStaked}/{TOTAL_SUPPLY} staked ({props.value.toFixed(2)}%)
+          {numStaked}/{totalSupply} staked ({props.value.toFixed(2)}%)
         </Typography>
       </Box>
     </Box>
@@ -51,8 +51,9 @@ export default function LinearWithValueLabel(props: LinearWithValueLabelProps) {
   return (
     <Box sx={{ width: '100%' }}>
       <LinearProgressWithLabel
-        value={(props.stakedCount / TOTAL_SUPPLY) * 100}
+        value={(props.stakedCount / props.totalSupply) * 100}
         numStaked={props.stakedCount}
+        totalSupply={props.totalSupply}
       />
     </Box>
   );
