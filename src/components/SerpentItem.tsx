@@ -4,10 +4,11 @@ export default function SerpentItem(props: any) {
   return (
     <Box
       sx={{
-        backgroundColor: 'secondary.main',
-        boxShadow: `8px 8px`,
+        backgroundColor: props.selected ? 'gold' : 'secondary.main',
         color: 'secondary.dark',
         display: 'flex',
+        flexDirection: 'column',
+        height: '156.77px',
       }}
     >
       {props.children}

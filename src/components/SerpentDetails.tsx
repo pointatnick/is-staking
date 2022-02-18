@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useState, useEffect } from 'react';
 
-export default function DiamondDetails(props: any) {
+export default function SerpentDetails(props: any) {
   const { icePerDay, time, name, rank, staked } = props;
   const [iceAccrued, setIceAccrued] = useState(0);
   const icePerSecond = icePerDay / 24 / 60 / 60;
@@ -33,14 +33,14 @@ export default function DiamondDetails(props: any) {
     <Box
       sx={{
         color: 'white',
-        padding: '2em 1em',
+        padding: '2px 8px',
         backgroundColor: '#00000055',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '118.06px',
+        minHeight: '50.77px',
       }}
     >
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex', gap: '8px' }}>
         <Typography
           sx={{
             fontFamily: 'Metamorphous',
@@ -48,16 +48,16 @@ export default function DiamondDetails(props: any) {
             whiteSpace: 'nowrap',
             textOverflow: 'ellipsis',
             overflowX: 'hidden',
-            fontSize: '1em',
+            fontSize: '0.8em',
           }}
           gutterBottom
           variant="h6"
           component="div"
         >
-          {name}
+          #{name.split('#')[1]}
         </Typography>
         <Typography
-          sx={{ fontFamily: 'Metamorphous' }}
+          sx={{ fontFamily: 'Metamorphous', fontSize: '0.8em' }}
           gutterBottom
           variant="body2"
           component="div"
@@ -65,18 +65,19 @@ export default function DiamondDetails(props: any) {
           🐍 {rank}
         </Typography>
       </Box>
-      {time ? (
-        <Box>
-          <Typography
-            sx={{ fontFamily: 'Cormorant Garamond', fontSize: '1em' }}
-            variant="body2"
-          >
-            <span style={{ fontFamily: 'Metamorphous', fontSize: '0.8em' }}>
-              {iceAccrued.toFixed(3)}
-            </span>{' '}
-            ICE to collect
-          </Typography>
-        </Box>
+      {props.staked ? (
+        <Typography
+          sx={{
+            fontFamily: 'Metamorphous',
+            fontSize: '0.7em',
+            textAlign: 'center',
+          }}
+          gutterBottom
+          variant="h6"
+          component="div"
+        >
+          STAKED
+        </Typography>
       ) : null}
     </Box>
   );

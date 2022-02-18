@@ -3,7 +3,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Image from 'next/image';
 import Box from '@mui/material/Box';
 
-export default function SerpentImage(props: any) {
+export default function NftImage(props: any) {
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState('');
 
@@ -28,8 +28,8 @@ export default function SerpentImage(props: any) {
     <Box
       sx={{
         display: 'block',
-        width: '156px',
-        height: '156px',
+        width: '106px',
+        height: '106px',
         border: '3px solid',
         borderColor: '#00000055',
       }}
@@ -38,12 +38,12 @@ export default function SerpentImage(props: any) {
         <Skeleton
           variant="rectangular"
           sx={{
-            width: '150px',
-            height: '150px',
+            width: '100px',
+            height: '100px',
           }}
         ></Skeleton>
       ) : (
-        <Image src={image} alt="serpent" width="150" height="150" />
+        <Image src={image} alt="serpent" width="100" height="100" />
       )}
     </Box>
   );

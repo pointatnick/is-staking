@@ -9,11 +9,11 @@ export default function DiamondDetails(props: any) {
     <Box
       sx={{
         color: 'white',
-        padding: '2em 1em',
+        padding: '2px 8px',
         backgroundColor: '#00000055',
         display: 'flex',
         flexDirection: 'column',
-        height: '118.06px',
+        height: '50.77px',
       }}
     >
       <Box sx={{ display: 'flex' }}>
@@ -22,18 +22,16 @@ export default function DiamondDetails(props: any) {
             fontFamily: 'Metamorphous',
             flex: '1',
             whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            overflowX: 'hidden',
-            fontSize: '1em',
+            fontSize: '0.8em',
           }}
           gutterBottom
           variant="h6"
           component="div"
         >
-          {name}
+          #{name.split('#')[1]}
         </Typography>
         <Typography
-          sx={{ fontFamily: 'Metamorphous' }}
+          sx={{ fontFamily: 'Metamorphous', fontSize: '0.8em' }}
           gutterBottom
           variant="body2"
           component="div"
@@ -42,17 +40,18 @@ export default function DiamondDetails(props: any) {
         </Typography>
       </Box>
       {staked ? (
-        <Box>
-          <Typography
-            sx={{ fontFamily: 'Cormorant Garamond', fontSize: '1em' }}
-            variant="body2"
-          >
-            <span style={{ fontFamily: 'Metamorphous', fontSize: '0.8em' }}>
-              {iceToCollect.toFixed(3)}
-            </span>{' '}
-            ICE to collect
-          </Typography>
-        </Box>
+        <Typography
+          sx={{
+            fontFamily: 'Metamorphous',
+            fontSize: '0.7em',
+            textAlign: 'center',
+          }}
+          gutterBottom
+          variant="h6"
+          component="div"
+        >
+          STAKED
+        </Typography>
       ) : null}
     </Box>
   );

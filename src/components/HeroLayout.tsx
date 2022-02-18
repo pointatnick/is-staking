@@ -4,8 +4,32 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import StakeCounter from './StakeCounter';
+import { useEffect, useState } from 'react';
 
-export default function HeroLayout(props: any) {
+export default function HeroLayout() {
+  const [totalSerpentsStaked, setTotalSerpentsStaked] = useState(0);
+  const [totalDiamondsStaked, setTotalDiamondsStaked] = useState(0);
+
+  // get total serpents staked
+  useEffect(() => {
+    (async () => {
+      const { numStaked } = await (
+        await fetch(`/api/serpents/totalStaked`)
+      ).json();
+      setTotalSerpentsStaked(numStaked);
+    })();
+  }, []);
+
+  // get total diamonds staked
+  useEffect(() => {
+    (async () => {
+      const { numStaked } = await (
+        await fetch(`/api/diamonds/totalStaked`)
+      ).json();
+      setTotalDiamondsStaked(numStaked);
+    })();
+  }, []);
+
   return (
     <Box component="header" sx={{ pt: 4 }}>
       <Grid container direction="column" alignItems="center">
@@ -46,13 +70,10 @@ export default function HeroLayout(props: any) {
           </Box>
           <Box sx={{ display: 'flex', gap: '80px' }}>
             <StakeCounter
-              stakedCount={props.serpentStakedCount}
+              stakedCount={totalSerpentsStaked}
               totalSupply={3333}
             />
-            <StakeCounter
-              stakedCount={props.diamondStakedCount}
-              totalSupply={777}
-            />
+            <StakeCounter stakedCount={totalDiamondsStaked} totalSupply={777} />
           </Box>
         </Stack>
       </Grid>
