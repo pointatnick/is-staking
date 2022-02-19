@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import Skeleton from '@mui/material/Skeleton';
 import Image from 'next/image';
 import Box from '@mui/material/Box';
 
-export default function NftImage(props: any) {
+const NftImage = memo(function (props: any) {
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState('');
 
@@ -47,4 +47,6 @@ export default function NftImage(props: any) {
       )}
     </Box>
   );
-}
+});
+
+export default NftImage;

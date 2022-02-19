@@ -7,6 +7,9 @@ import { DAO_PUBLIC_KEY } from '../config';
 import DiamondDetails from './DiamondDetails';
 import NftImage from './NftImage';
 import SerpentItem from './SerpentItem';
+import store from '../store/store';
+import { removeListener } from 'process';
+import { Typography } from '@mui/material';
 
 const DiamondsGroup = function (props: any) {
   // todo: write type
@@ -17,6 +20,20 @@ const DiamondsGroup = function (props: any) {
   const [loading, setLoading] = useState(true);
   const { connection } = useConnection();
   const { publicKey, wallet } = useWallet();
+
+  // set selected diamond
+  useEffect(() => {
+    const removeListener = store.addListener((state: any) => {
+      const { diamond } = state;
+      setSelectedDiamond(diamond);
+    });
+    const { diamond } = store.getState();
+    setSelectedDiamond(diamond);
+
+    return () => {
+      removeListener();
+    };
+  }, [selectedDiamond, setSelectedDiamond]);
 
   // get diamonds
   useEffect(() => {
@@ -121,13 +138,21 @@ const DiamondsGroup = function (props: any) {
       return a.rank > b.rank ? 1 : -1;
     })
     .map(({ name, imageUrl, rank, mint, tokenAccount }) => (
-      <SerpentItem key={mint} selected={mint === selectedDiamond.mint}>
+      <SerpentItem key={mint} selected={mint === selectedDiamond?.mint}>
         <NftImage image={imageUrl} />
         <Box sx={{ flex: 1 }}>
           <DiamondDetails name={name} rank={rank} />
         </Box>
       </SerpentItem>
     ));
+
+  const toggleDiamond = function (diamond: any) {
+    if (diamond.mint === selectedDiamond?.mint) {
+      store.setState({ diamond: {} });
+    } else {
+      store.setState({ diamond });
+    }
+  };
 
   const sortedStakedDiamonds = stakedDiamonds
     .sort((a, b) => {
@@ -136,10 +161,10 @@ const DiamondsGroup = function (props: any) {
     .map((diamond: any) => (
       <Box
         key={diamond.mint}
-        onClick={() => setSelectedDiamond(diamond)}
+        onClick={() => toggleDiamond(diamond)}
         sx={{
           backgroundColor:
-            diamond.mint === selectedDiamond.mint ? 'gold' : 'secondary.main',
+            diamond.mint === selectedDiamond?.mint ? 'gold' : 'secondary.main',
           color: 'secondary.dark',
           display: 'flex',
           flexDirection: 'column',
@@ -157,19 +182,32 @@ const DiamondsGroup = function (props: any) {
       </Box>
     ));
 
-  return loading ? null : (
+  return (
     <Box
       sx={{
-        display: 'flex',
-        gap: '8px',
         flex: 1,
-        flexWrap: 'wrap',
-        background: '#00000055',
         padding: '8px',
       }}
     >
-      {sortedStakedDiamonds}
-      {sortedDiamonds}
+      <Typography
+        sx={{ fontFamily: 'Metamorphous', color: 'white', textAlign: 'center' }}
+        variant="h4"
+      >
+        DIAMONDS
+      </Typography>
+      {loading ? null : (
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '25px',
+            // background: '#00000055',
+          }}
+        >
+          {sortedStakedDiamonds}
+          {sortedDiamonds}
+        </Box>
+      )}
     </Box>
   );
 };

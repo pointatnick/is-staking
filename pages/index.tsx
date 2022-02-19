@@ -60,3 +60,38 @@ export default function Home() {
     </ConnectionProvider>
   );
 }
+
+/**
+ * HeroLayout
+ * - Title
+ * - Description
+ * - WalletButton
+ * - IceCounter
+ * - ClaimButton
+ * - StakeCounter
+ * - StakeCounter
+ * Staker
+ * - StakeButtons
+ *   - StakeButton
+ *   - UnstakeButton
+ *   - PairButton
+ * - PairedSerpentGroup
+ *   - Title
+ *   - PairedSerpent
+ *     - Serpent
+ *       - NftImage
+ *       - NftDetails
+ *     - Diamond
+ *       - NftImage
+ *       - NftDetails
+ * - SerpentGroup
+ *   - Title
+ *   - Serpent
+ *     - NftImage
+ *     - NftDetails
+ * - DiamondGroup
+ *   - Title
+ *   - Diamond
+ *     - NftImage
+ *     - NftDetails
+ */

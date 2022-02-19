@@ -15,10 +15,6 @@ a {
   box-sizing: border-box;
 }
 
-.MuiButton-root {
-  color: white !important;
-}
-
 .MuiLinearProgress-root {
   height: 25px !important;
   width: 400px !important;

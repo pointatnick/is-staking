@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import StakeCounter from './StakeCounter';
 import { useEffect, useState } from 'react';
+import IceCounter from './IceCounter';
 
 export default function HeroLayout() {
   const [totalSerpentsStaked, setTotalSerpentsStaked] = useState(0);
@@ -35,7 +36,7 @@ export default function HeroLayout() {
       <Grid container direction="column" alignItems="center">
         <Typography
           sx={{
-            marginTop: '60px',
+            marginTop: '8px',
             fontSize: '3.3rem',
             fontFamily: 'Metamorphous',
           }}
@@ -63,17 +64,27 @@ export default function HeroLayout() {
               color="white"
               gutterBottom
             >
-              Stake your serpents for $ICE. The more rare your serpent, the
-              higher your yield.
+              Stake your NFTs for $ICE. The rarer your NFT, the higher your
+              yield. Pair your serpent and diamond together for a bonus yield.
             </Typography>
             <WalletMultiButton />
           </Box>
-          <Box sx={{ display: 'flex', gap: '80px' }}>
-            <StakeCounter
-              stakedCount={totalSerpentsStaked}
-              totalSupply={3333}
-            />
-            <StakeCounter stakedCount={totalDiamondsStaked} totalSupply={777} />
+          <Box sx={{ display: 'flex', gap: '16px' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <StakeCounter
+                stakedCount={totalSerpentsStaked}
+                totalSupply={3333}
+                nft="serpents"
+              />
+              <StakeCounter
+                stakedCount={totalDiamondsStaked}
+                totalSupply={777}
+                nft="diamonds"
+              />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <IceCounter />
+            </Box>
           </Box>
         </Stack>
       </Grid>

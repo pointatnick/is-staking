@@ -8,7 +8,7 @@ import NftImage from './NftImage';
 import SerpentDetails from './SerpentDetails';
 import SerpentItem from './SerpentItem';
 
-const SerpentsGroup = function () {
+const SerpentsGroup = function (props: any) {
   // todo: write type
   const [serpents, setSerpents] = useState<any[]>([]);
   // todo: write type
@@ -154,7 +154,7 @@ const SerpentsGroup = function () {
         gap: '8px',
         flex: 1,
         flexWrap: 'wrap',
-        background: '#00000055',
+        // background: '#00000055',
         padding: '8px',
       }}
     >
