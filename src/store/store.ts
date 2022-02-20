@@ -12,9 +12,15 @@
 // // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 // export type AppDispatch = typeof store.dispatch;
 
-type UiNft = { mint: string; isStaked: boolean };
-type UiDiamond = UiNft & {};
-type UiSerpent = UiNft & {};
+export type UiNft = {
+  mint: string;
+  name: string;
+  isStaked: boolean;
+  rank: number;
+  imageUrl: string;
+};
+export type UiDiamond = UiNft & {};
+export type UiSerpent = UiNft & {};
 
 class Store {
   state: {
@@ -37,8 +43,9 @@ class Store {
 
   setState(state: any) {
     this.state = { ...this.state, ...state };
+    console.log('new state', this.state);
     for (const listener of this.listeners) {
-      listener(state);
+      listener(this.state);
     }
   }
 

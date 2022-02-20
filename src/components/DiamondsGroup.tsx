@@ -6,9 +6,7 @@ import { Diamond } from '../../pages/api/types';
 import { DAO_PUBLIC_KEY } from '../config';
 import DiamondDetails from './DiamondDetails';
 import NftImage from './NftImage';
-import SerpentItem from './SerpentItem';
-import store from '../store/store';
-import { removeListener } from 'process';
+import store, { UiDiamond } from '../store/store';
 import { Typography } from '@mui/material';
 
 const DiamondsGroup = function (props: any) {
@@ -137,18 +135,29 @@ const DiamondsGroup = function (props: any) {
     .sort((a, b) => {
       return a.rank > b.rank ? 1 : -1;
     })
-    .map(({ name, imageUrl, rank, mint, tokenAccount }) => (
-      <SerpentItem key={mint} selected={mint === selectedDiamond?.mint}>
-        <NftImage image={imageUrl} />
+    .map((diamond) => (
+      <Box
+        key={diamond.mint}
+        onClick={() => toggleDiamond(diamond)}
+        sx={{
+          backgroundColor:
+            diamond.mint === selectedDiamond?.mint ? 'gold' : 'secondary.main',
+          color: 'secondary.dark',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '156.77px',
+        }}
+      >
+        <NftImage image={diamond.imageUrl} />
         <Box sx={{ flex: 1 }}>
-          <DiamondDetails name={name} rank={rank} />
+          <DiamondDetails name={diamond.name} rank={diamond.rank} />
         </Box>
-      </SerpentItem>
+      </Box>
     ));
 
-  const toggleDiamond = function (diamond: any) {
+  const toggleDiamond = function (diamond: UiDiamond) {
     if (diamond.mint === selectedDiamond?.mint) {
-      store.setState({ diamond: {} });
+      store.setState({ diamond: null });
     } else {
       store.setState({ diamond });
     }
@@ -158,7 +167,7 @@ const DiamondsGroup = function (props: any) {
     .sort((a, b) => {
       return a.rank > b.rank ? 1 : -1;
     })
-    .map((diamond: any) => (
+    .map((diamond: UiDiamond) => (
       <Box
         key={diamond.mint}
         onClick={() => toggleDiamond(diamond)}
@@ -200,7 +209,7 @@ const DiamondsGroup = function (props: any) {
           sx={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: '25px',
+            gap: '8px',
             // background: '#00000055',
           }}
         >
