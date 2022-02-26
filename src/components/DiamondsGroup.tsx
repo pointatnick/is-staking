@@ -1,9 +1,7 @@
 import Box from '@mui/material/Box';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
 import { Diamond } from '../../pages/api/types';
-import { DAO_PUBLIC_KEY } from '../config';
 import DiamondDetails from './DiamondDetails';
 import NftImage from './NftImage';
 import store, { UiDiamond } from '../store/store';
@@ -64,68 +62,11 @@ const DiamondsGroup = function (props: any) {
           })
         );
 
-        const { stakedDiamondMints, stakedDiamonds: allStakedDiamonds } =
-          await (
-            await fetch(
-              `/api/diamonds/staked?publicKey=${publicKey.toString()}`
-            )
-          ).json();
-        const stakedMintsForUser: any[] = [];
+        const { stakedDiamonds: allStakedDiamonds } = await (
+          await fetch(`/api/diamonds/staked?publicKey=${publicKey.toString()}`)
+        ).json();
 
-        await Promise.all(
-          stakedDiamondMints.map(async (item: any) => {
-            // for getting metadata from rarityResponse
-            const index = mints.indexOf(item.mint);
-            const tokenAta = new PublicKey(item.tokenAccount);
-
-            try {
-              // get most recent signature for ATA
-              const signature = (
-                await connection.getSignaturesForAddress(tokenAta)
-              )[0].signature;
-              // get tx data
-              const tx = await connection.getConfirmedTransaction(
-                signature,
-                'confirmed'
-              );
-
-              // determine if diamond ended up with DAO in most recent ATA transaction
-              if (tx?.meta?.postTokenBalances) {
-                for (const balance of tx.meta.postTokenBalances) {
-                  if (
-                    balance.owner === DAO_PUBLIC_KEY.toString() &&
-                    balance.uiTokenAmount.uiAmount === 1
-                  ) {
-                    // found a diamond in the DAO from this ATA
-                    // get metadata
-                    const {
-                      rank,
-                      name,
-                      imageUrl,
-                      lastStaked,
-                      isStaked,
-                      iceToCollect,
-                    } = allDiamonds[index];
-                    stakedMintsForUser.push({
-                      ...item,
-                      rank,
-                      name,
-                      imageUrl,
-                      lastStaked,
-                      isStaked,
-                      iceToCollect,
-                    });
-                    break;
-                  }
-                }
-              }
-            } catch (err) {
-              console.error(item.mint, err);
-            }
-          })
-        );
-
-        setStakedDiamonds(stakedMintsForUser);
+        setStakedDiamonds(allStakedDiamonds);
         setLoading(false);
       })();
     }

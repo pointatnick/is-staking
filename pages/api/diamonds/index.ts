@@ -1,12 +1,12 @@
+import { Filter, UpdateFilter } from 'mongodb';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { DIAMONDS_COLLECTION } from '../../../src/config';
-import { connectToDatabase } from '../../../util/mongodb';
+import { connectToDatabase } from '../../../lib/mongodb';
 import type { Diamond } from '../types';
 
 export async function getAllDiamonds() {
   const { diamondDb: db } = await connectToDatabase();
-  const serpents = await db.collection(DIAMONDS_COLLECTION).find({}).toArray();
-  return serpents;
+  return await db.collection(DIAMONDS_COLLECTION).find({}).toArray();
 }
 
 export async function getDiamond(mint: string) {
@@ -14,7 +14,7 @@ export async function getDiamond(mint: string) {
   return await db.collection(DIAMONDS_COLLECTION).findOne({ mint });
 }
 
-export async function updateDiamond(
+export async function stakeOrUnstakeDiamond(
   mint: string,
   lastStaked: Date,
   isStaked: boolean,
@@ -28,9 +28,15 @@ export async function updateDiamond(
       staker,
     },
   };
-  await db
-    .collection(DIAMONDS_COLLECTION)
-    .updateOne({ mint }, updateDoc, { upsert: true });
+  await db.collection(DIAMONDS_COLLECTION).updateOne({ mint }, updateDoc);
+}
+
+export async function updateDiamond(
+  filter: Filter<Diamond>,
+  update: UpdateFilter<Diamond>
+) {
+  const { diamondDb: db } = await connectToDatabase();
+  await db.collection(DIAMONDS_COLLECTION).updateOne(filter, update);
 }
 
 type Data = {

@@ -43,7 +43,6 @@ export default async function handler(
 ) {
   const user = new PublicKey(req.query.publicKey);
   const diamondMints = await getTokenAccountsAndMintsFromWallet(user);
-  console.log(diamondMints);
 
   // return arweave data
   res.status(200).json({ diamondMints });

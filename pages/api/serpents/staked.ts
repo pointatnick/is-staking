@@ -3,13 +3,25 @@ import { PublicKey } from '@solana/web3.js';
 import { DAO_PUBLIC_KEY, SERPENTS_COLLECTION } from '../../../src/config';
 import { getTokenAccountsAndMintsFromWallet } from './owned';
 import { getSerpentsFromWallet } from './[publicKey]';
-import { connectToDatabase } from '../../../util/mongodb';
+import { connectToDatabase } from '../../../lib/mongodb';
 import { Serpent } from '../types';
+import { getChainSerpents } from '../ice/serpents/[publicKey]';
 
 type Data = {
-  stakedSerpentMints: { mint: string; tokenAccount: string }[];
-  stakedSerpents: Serpent[];
+  stakedSerpents: any[];
 };
+
+export async function getStakedSerpentMintsForPublicKey(publicKey: string) {
+  const user = new PublicKey(publicKey);
+  // get all serpents in DAO
+  const daoMints = await getSerpentsFromWallet(DAO_PUBLIC_KEY);
+
+  // get all serpents wallet used to have
+  const oldSerpentMints = await getTokenAccountsAndMintsFromWallet(user, 0);
+
+  // get all serpents wallet used to have that are in the DAO
+  return oldSerpentMints.filter((item) => daoMints.includes(item.mint));
+}
 
 export async function getAllStakedSerpents() {
   const { serpentDb: db } = await connectToDatabase();
@@ -20,23 +32,26 @@ export async function getAllStakedSerpents() {
   return serpents;
 }
 
+export async function getStakedSerpentsForPublicKey(publicKey: string) {
+  const allStakedSerpents = await getAllStakedSerpents();
+  const chainSerpents = await getChainSerpents(publicKey, allStakedSerpents);
+  const chainSerpentMints = chainSerpents.map((x: Serpent) => x.mint);
+  // include diamonds whose token accounts may have closed
+  const serpents = allStakedSerpents.filter(
+    (x: Serpent) =>
+      x.staker === publicKey && !chainSerpentMints.includes(x.mint)
+  );
+
+  return [...chainSerpents, ...serpents];
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const user = new PublicKey(req.query.publicKey);
-  // get all serpents in DAO
-  const daoMints = await getSerpentsFromWallet(DAO_PUBLIC_KEY);
-
-  // get all serpents wallet used to have
-  const oldSerpentMints = await getTokenAccountsAndMintsFromWallet(user, 0);
-
-  // get all serpents wallet used to have that are in the DAO
-  const serpentMints = oldSerpentMints.filter((item) =>
-    daoMints.includes(item.mint)
-  );
-
-  const stakedSerpents = await getAllStakedSerpents();
-
-  res.status(200).json({ stakedSerpentMints: serpentMints, stakedSerpents });
+  res.status(200).json({
+    stakedSerpents: await getStakedSerpentsForPublicKey(
+      req.query.publicKey as string
+    ),
+  });
 }

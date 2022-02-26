@@ -1,29 +1,24 @@
-export type Diamond = {
+export type Nft = {
   _id: string;
   name: string;
   mint: string;
   attributes: { trait_type: string; value: string }[];
   imageUrl: string;
-  isStaked: boolean;
-  lastStaked: Date | null;
+  isPaired: boolean;
   rarity: number;
   rank: number;
-  iceToCollect: number;
   staker: string;
 };
-
-export type Serpent = {
-  _id: string;
-  name: string;
-  mint: string;
-  attributes: { trait_type: string; value: string }[];
-  imageUrl: string;
+export type Diamond = Nft & {
   isStaked: boolean;
   lastStaked: Date | null;
-  rarity: number;
-  rank: number;
+  iceToCollect: number;
+};
+
+export type Serpent = Nft & {
+  isStaked: boolean;
+  lastStaked: Date | null;
   icePerDay: number;
-  staker: string;
 };
 
 /**
@@ -32,18 +27,16 @@ export type Serpent = {
  * from Serpent.lastStaked until PairedSerpent.lastPaired at solo rate
  * plus PairedSerpent.lastPaired until now at pair rate
  */
-export type PairedSerpent = {
-  _id: string;
-  name: string;
-  mint: string;
-  attributes: { trait_type: string; value: string }[];
-  imageUrl: string;
-  isPaired: boolean;
+export type PairedSerpent = Nft & {
   lastPaired: Date | null;
-  rarity: number;
-  rank: number;
   diamondMint: string;
   diamondRank: number;
   iceToCollect: number;
+};
+
+export type IceAudit = {
   staker: string;
+  iceCollected: number;
+  txId: string | undefined;
+  date: Date;
 };

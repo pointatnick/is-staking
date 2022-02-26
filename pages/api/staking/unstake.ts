@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import * as bs58 from 'bs58';
 import { Message, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import { CONNECTION } from '../../../src/config';
-import { updateSerpent } from '../serpents';
+import { stakeOrUnstakeSerpent } from '../serpents';
 import nacl from 'tweetnacl';
 
 export default async function handler(
@@ -24,7 +24,7 @@ export default async function handler(
 
   try {
     await CONNECTION.sendRawTransaction(transaction.serialize());
-    await updateSerpent(mint, new Date(), false, null);
+    await stakeOrUnstakeSerpent(mint, new Date(), false, null);
     // TODO: check if pairedSerpent, in that case, set isPaired to false and zero out iceToCollect
     res.status(200).json({ error: false });
   } catch (error) {

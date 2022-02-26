@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { SERPENTS_COLLECTION } from '../../../src/config';
-import { connectToDatabase } from '../../../util/mongodb';
+import { connectToDatabase } from '../../../lib/mongodb';
 import type { Serpent } from '../types';
+import { Filter, UpdateFilter } from 'mongodb';
 
 export async function getAllSerpents() {
   const { serpentDb: db } = await connectToDatabase();
@@ -15,6 +16,14 @@ export async function getSerpent(mint: string) {
 }
 
 export async function updateSerpent(
+  filter: Filter<Serpent>,
+  update: UpdateFilter<Serpent>
+) {
+  const { serpentDb: db } = await connectToDatabase();
+  await db.collection(SERPENTS_COLLECTION).updateOne(filter, update);
+}
+
+export async function stakeOrUnstakeSerpent(
   mint: string,
   lastStaked: Date,
   isStaked: boolean,
@@ -28,9 +37,7 @@ export async function updateSerpent(
       staker,
     },
   };
-  await db
-    .collection(SERPENTS_COLLECTION)
-    .updateOne({ mint }, updateDoc, { upsert: true });
+  await db.collection(SERPENTS_COLLECTION).updateOne({ mint }, updateDoc);
 }
 
 type Data = {

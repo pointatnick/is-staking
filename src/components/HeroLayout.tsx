@@ -10,24 +10,28 @@ import IceCounter from './IceCounter';
 export default function HeroLayout() {
   const [totalSerpentsStaked, setTotalSerpentsStaked] = useState(0);
   const [totalDiamondsStaked, setTotalDiamondsStaked] = useState(0);
+  const [serpents, setSerpents] = useState([]);
+  const [diamonds, setDiamonds] = useState([]);
 
   // get total serpents staked
   useEffect(() => {
     (async () => {
-      const { numStaked } = await (
+      const { stakedSerpents } = await (
         await fetch(`/api/serpents/totalStaked`)
       ).json();
-      setTotalSerpentsStaked(numStaked);
+      setTotalSerpentsStaked(stakedSerpents.length);
+      setSerpents(stakedSerpents);
     })();
   }, []);
 
   // get total diamonds staked
   useEffect(() => {
     (async () => {
-      const { numStaked } = await (
+      const { stakedDiamonds } = await (
         await fetch(`/api/diamonds/totalStaked`)
       ).json();
-      setTotalDiamondsStaked(numStaked);
+      setTotalDiamondsStaked(stakedDiamonds.length);
+      setDiamonds(stakedDiamonds);
     })();
   }, []);
 
@@ -83,7 +87,7 @@ export default function HeroLayout() {
               />
             </Box>
             <Box sx={{ flex: 1 }}>
-              <IceCounter />
+              <IceCounter serpents={serpents} diamonds={diamonds} />
             </Box>
           </Box>
         </Stack>

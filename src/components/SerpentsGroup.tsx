@@ -1,10 +1,8 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
 import { Serpent } from '../../pages/api/types';
-import { DAO_PUBLIC_KEY } from '../config';
 import NftImage from './NftImage';
 import SerpentDetails from './SerpentDetails';
 import store, { UiSerpent } from '../store/store';
@@ -64,68 +62,11 @@ const SerpentsGroup = function (props: any) {
           })
         );
 
-        const { stakedSerpentMints, stakedSerpents: allStakedSerpents } =
-          await (
-            await fetch(
-              `/api/serpents/staked?publicKey=${publicKey.toString()}`
-            )
-          ).json();
-        const stakedMintsForUser: any[] = [];
+        const { stakedSerpents: allStakedSerpents } = await (
+          await fetch(`/api/serpents/staked?publicKey=${publicKey.toString()}`)
+        ).json();
 
-        await Promise.all(
-          stakedSerpentMints.map(async (item: any) => {
-            // for getting metadata from rarityResponse
-            const index = mints.indexOf(item.mint);
-            const tokenAta = new PublicKey(item.tokenAccount);
-
-            try {
-              // get most recent signature for ATA
-              const signature = (
-                await connection.getSignaturesForAddress(tokenAta)
-              )[0].signature;
-              // get tx data
-              const tx = await connection.getConfirmedTransaction(
-                signature,
-                'confirmed'
-              );
-
-              // determine if diamond ended up with DAO in most recent ATA transaction
-              if (tx?.meta?.postTokenBalances) {
-                for (const balance of tx.meta.postTokenBalances) {
-                  if (
-                    balance.owner === DAO_PUBLIC_KEY.toString() &&
-                    balance.uiTokenAmount.uiAmount === 1
-                  ) {
-                    // found a serpent in the DAO from this ATA
-                    // get metadata
-                    const {
-                      rank,
-                      name,
-                      imageUrl,
-                      lastStaked,
-                      isStaked,
-                      icePerDay,
-                    } = allSerpents[index];
-                    stakedMintsForUser.push({
-                      ...item,
-                      rank,
-                      name,
-                      imageUrl,
-                      lastStaked,
-                      isStaked,
-                      icePerDay,
-                    });
-                    break;
-                  }
-                }
-              }
-            } catch (err) {
-              console.error(item.mint, err);
-            }
-          })
-        );
-
-        setStakedSerpents(stakedMintsForUser);
+        setStakedSerpents(allStakedSerpents);
         setLoading(false);
       })();
     }

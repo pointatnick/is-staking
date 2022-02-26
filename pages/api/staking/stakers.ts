@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { SERPENTS_COLLECTION } from '../../../src/config';
-import { connectToDatabase } from '../../../util/mongodb';
+import { connectToDatabase } from '../../../lib/mongodb';
 import { Serpent } from '../types';
 
 export async function getAllStakers() {

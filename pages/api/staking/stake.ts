@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Message, PublicKey, Transaction } from '@solana/web3.js';
-import { updateSerpent } from '../serpents';
+import { stakeOrUnstakeSerpent } from '../serpents';
 import { CONNECTION } from '../../../src/config';
 
 type Data = {
@@ -21,7 +21,7 @@ export default async function handler(
       await CONNECTION.sendRawTransaction(tx.serialize());
 
       // write time of staking
-      await updateSerpent(mint, new Date(), true, publicKey);
+      await stakeOrUnstakeSerpent(mint, new Date(), true, publicKey);
 
       res.status(200).json({ success: true });
     } catch (error) {

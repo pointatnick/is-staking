@@ -43,7 +43,6 @@ export default async function handler(
 ) {
   const user = new PublicKey(req.query.publicKey);
   const serpentMints = await getTokenAccountsAndMintsFromWallet(user);
-  console.log(serpentMints);
 
   // return arweave data
   res.status(200).json({ serpentMints });
