@@ -3,7 +3,6 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import Box from '@mui/material/Box';
 import SerpentsGroup from './SerpentsGroup';
 import DiamondsGroup from './DiamondsGroup';
-import StakeButtons from './StakeButtons';
 
 export default function Staker() {
   const { publicKey } = useWallet();
@@ -18,7 +17,6 @@ export default function Staker() {
             margin: ['0', '0 4em', '0 4em', '0 8em', '0 24em'],
           }}
         >
-          <StakeButtons />
           <Box sx={{ border: '1px solid red' }}>content</Box>
           <Box
             sx={{

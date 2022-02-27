@@ -70,7 +70,18 @@ export default function StakeButtons(props: any) {
   );
 
   return (
-    <Box sx={{ display: 'flex', gap: '8px' }}>
+    <Box
+      sx={{
+        position: 'fixed',
+        bottom: 0,
+        display: 'flex',
+        gap: '8px',
+        width: '100%',
+        backgroundColor: 'secondary.dark',
+        padding: '8px',
+      }}
+    >
+      <Box sx={{ flex: '2' }} />
       <Button
         variant="contained"
         sx={{
@@ -113,6 +124,21 @@ export default function StakeButtons(props: any) {
       >
         Pair
       </Button>
+      <Button
+        variant="contained"
+        sx={{
+          flex: '1',
+          ':disabled': {
+            color: '#ffffff55',
+            backgroundColor: '#39322655',
+          },
+        }}
+        onClick={pairSerpent}
+        disabled={pairBtnShouldBeDisabled}
+      >
+        Unpair
+      </Button>
+      <Box sx={{ flex: '2' }} />
     </Box>
   );
 }

@@ -16,6 +16,7 @@ import { theme } from '../styles/theme';
 import Box from '@mui/material/Box';
 import { ThemeProvider } from '@mui/material';
 import HeroLayout from '../src/components/HeroLayout';
+import StakeButtons from '../src/components/StakeButtons';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -54,6 +55,7 @@ export default function Home() {
               <HeroLayout />
               <Staker />
             </Box>
+            <StakeButtons />
           </ThemeProvider>
         </WalletModalProvider>
       </WalletProvider>
