@@ -30,7 +30,7 @@ export async function getChainSerpents(publicKey: string, serpents: Serpent[]) {
         if (tx?.meta?.postTokenBalances) {
           for (const balance of tx.meta.postTokenBalances) {
             if (
-              balance.owner === DAO_PUBLIC_KEY.toString() &&
+              balance.owner === DAO_PUBLIC_KEY.toBase58() &&
               balance.uiTokenAmount.uiAmount === 1
             ) {
               // found a diamond in the DAO from this ATA
@@ -106,6 +106,6 @@ export default async function handler(
           !chainDiamondMints.includes(x.mint)
       )
       .reduce(reducer, 0);
-  console.log('serpents', ice);
+  // console.log('serpents', ice);
   res.status(200).json({ ice });
 }

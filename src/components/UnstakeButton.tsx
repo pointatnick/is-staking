@@ -2,13 +2,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Message, PublicKey, Transaction } from '@solana/web3.js';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import {
-  Token,
-  TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { useCallback, useState } from 'react';
-import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
+import { DAO_PUBLIC_KEY } from '../config';
 import LoadingProgress from './LoadingProgress';
 
 export default function UnstakeButton(props: any) {

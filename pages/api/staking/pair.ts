@@ -17,9 +17,9 @@ export default async function handler(
     try {
       // get data from db
       const serpent = await getSerpent(serpentMint);
-      console.log(serpent);
+      // console.log(serpent);
       const diamond = await getDiamond(diamondMint);
-      console.log(diamond);
+      // console.log(diamond);
       const userOwnsSerpent = serpent.staker === publicKey;
       const userOwnsDiamond = diamond.staker === publicKey;
       if (

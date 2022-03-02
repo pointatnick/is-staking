@@ -8,7 +8,9 @@ export type Nft = {
   rarity: number;
   rank: number;
   staker: string;
+  tokenAccount: string;
 };
+
 export type Diamond = Nft & {
   isStaked: boolean;
   lastStaked: Date | null;

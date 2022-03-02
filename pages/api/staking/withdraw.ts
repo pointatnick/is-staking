@@ -9,7 +9,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<{ error: boolean }>
 ) {
-  const { txMessage, signature, publicKey, mint, ice } = req.body;
+  const { txMessage, signature, publicKey } = req.body;
 
   // send ICE to user
   const user = new PublicKey(publicKey);
@@ -28,7 +28,7 @@ export default async function handler(
   // TODO: retry transactions
   try {
     await CONNECTION.sendRawTransaction(transaction.serialize());
-    await stakeOrUnstakeSerpent(mint, new Date(), true, publicKey);
+    // await stakeOrUnstakeSerpent(mint, new Date(), true, publicKey);
     res.status(200).json({ error: false });
   } catch (error) {
     console.error(error);

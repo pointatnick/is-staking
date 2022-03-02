@@ -7,7 +7,7 @@ import {
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, Transaction } from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
 import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
 
@@ -52,8 +52,18 @@ export default function IceCounter(props: any) {
   const onClaim = useCallback(async () => {
     setLoading(true);
     if (publicKey) {
+      let { ice: pairedIce } = await getPairedIce(publicKey.toBase58());
+      let { ice: diamondsIce } = await getDiamondsIce(publicKey.toBase58());
+      let { ice: serpentsIce } = await getSerpentsIce(publicKey.toBase58());
+      let iceToWithdraw = pairedIce + diamondsIce + serpentsIce;
+
       try {
-        console.log(totalIce);
+        // zero out iceToCollect
+        fetch('/api/ice/withdraw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ publicKey: publicKey.toBase58() }),
+        });
 
         const mintToken = new Token(
           connection,
@@ -99,7 +109,7 @@ export default function IceCounter(props: any) {
             toTokenAddress,
             DAO_PUBLIC_KEY,
             [],
-            totalIce * 1e9,
+            iceToWithdraw * 1e9,
             9
           )
         );
@@ -129,18 +139,7 @@ export default function IceCounter(props: any) {
               txMessage,
               signature,
               publicKey: publicKey.toBase58(),
-              mint: props.mint,
-              ice: totalIce,
             }),
-          })
-        ).json();
-
-        // zero out iceToCollect
-        await (
-          await fetch('/api/ice/withdraw', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicKey: publicKey.toBase58() }),
           })
         ).json();
 
@@ -151,7 +150,7 @@ export default function IceCounter(props: any) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               publicKey: publicKey.toBase58(),
-              ice: totalIce,
+              ice: iceToWithdraw,
               txId: tx,
             }),
           })
@@ -166,15 +165,7 @@ export default function IceCounter(props: any) {
         setLoading(false);
       }
     }
-  }, [
-    publicKey,
-    connection,
-    props.mint,
-    props.tokenAccount,
-    signTransaction,
-    wallet,
-    totalIce,
-  ]);
+  }, [publicKey, connection, signTransaction, wallet]);
 
   return (
     <Box>

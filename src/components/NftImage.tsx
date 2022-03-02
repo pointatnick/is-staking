@@ -3,7 +3,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Image from 'next/image';
 import Box from '@mui/material/Box';
 
-const NftImage = memo(function (props: any) {
+const NftImage = function (props: any) {
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState('');
 
@@ -47,6 +47,7 @@ const NftImage = memo(function (props: any) {
       )}
     </Box>
   );
-});
+};
 
-export default NftImage;
+const MemoNftImage = memo(NftImage);
+export default MemoNftImage;

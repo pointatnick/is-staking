@@ -23,7 +23,7 @@ export async function updatePairedSerpent(
   update: UpdateFilter<PairedSerpent>,
   options: UpdateOptions | null = null
 ) {
-  console.log('updating', filter, update);
+  // console.log('updating', filter, update);
   const { serpentDb, diamondDb } = await connectToDatabase();
   await serpentDb
     .collection(PAIRS_COLLECTION)
