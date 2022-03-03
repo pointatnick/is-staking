@@ -4,6 +4,7 @@ import { Message, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import { CONNECTION } from '../../../src/config';
 import { stakeOrUnstakeSerpent } from '../serpents';
 import nacl from 'tweetnacl';
+import { stakeOrUnstakeDiamond } from '../diamonds';
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,6 +26,7 @@ export default async function handler(
   try {
     await CONNECTION.sendRawTransaction(transaction.serialize());
     await stakeOrUnstakeSerpent(mint, new Date(), false, null);
+    await stakeOrUnstakeDiamond(mint, new Date(), false, null);
     // TODO: check if pairedSerpent, in that case, set isPaired to false and zero out iceToCollect
     res.status(200).json({ error: false });
   } catch (error) {

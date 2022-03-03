@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAllPairedSerpents } from '../../pairedSerpents';
+import { getAllPairedSerpents } from '../../pairedSerpents/[publicKey]';
 import { Diamond } from '../../types';
 
 export default async function handler(

@@ -175,9 +175,13 @@ export default function IceCounter(props: any) {
       >
         {totalIce.toLocaleString()} $ICE
       </Typography>
-      <Button variant="contained" onClick={onClaim}>
-        Claim $ICE
-      </Button>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}
+      >
+        <Button variant="contained" onClick={onClaim}>
+          Claim $ICE
+        </Button>
+      </Box>
     </Box>
   );
 }

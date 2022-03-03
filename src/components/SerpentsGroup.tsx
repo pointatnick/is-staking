@@ -73,6 +73,7 @@ const SerpentsGroup = function (props: any) {
   }, [publicKey, connection, wallet]);
 
   const toggleSerpent = function (serpent: UiSerpent) {
+    store.setState({ pair: null });
     if (serpent.mint === selectedSerpent?.mint) {
       store.setState({ serpent: null });
     } else {
@@ -150,6 +151,7 @@ const SerpentsGroup = function (props: any) {
             flexWrap: 'wrap',
             // background: '#00000055',
             padding: '8px',
+            justifyContent: 'center',
           }}
         >
           {sortedStakedSerpents}

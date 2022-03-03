@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { updatePairedSerpent } from '../pairedSerpents';
+import { updatePairedSerpent } from '../pairedSerpents/[publicKey]';
 import { getSerpent } from '../serpents';
 import { getDiamond } from '../diamonds';
 

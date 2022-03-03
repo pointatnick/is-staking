@@ -33,6 +33,8 @@ export type PairedSerpent = Nft & {
   lastPaired: Date | null;
   diamondMint: string;
   diamondRank: number;
+  diamondImageUrl: string;
+  diamondName: string;
   iceToCollect: number;
 };
 

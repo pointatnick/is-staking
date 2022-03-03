@@ -65,12 +65,22 @@ const DiamondsGroup = function (props: any) {
         const { stakedDiamonds: allStakedDiamonds } = await (
           await fetch(`/api/diamonds/staked?publicKey=${publicKey.toString()}`)
         ).json();
+        console.log(allStakedDiamonds);
 
         setStakedDiamonds(allStakedDiamonds);
         setLoading(false);
       })();
     }
   }, [publicKey, connection, wallet]);
+
+  const toggleDiamond = function (diamond: UiDiamond) {
+    store.setState({ pair: null });
+    if (diamond.mint === selectedDiamond?.mint) {
+      store.setState({ diamond: null });
+    } else {
+      store.setState({ diamond });
+    }
+  };
 
   const sortedDiamonds = diamonds
     .sort((a, b) => {
@@ -95,14 +105,6 @@ const DiamondsGroup = function (props: any) {
         </Box>
       </Box>
     ));
-
-  const toggleDiamond = function (diamond: UiDiamond) {
-    if (diamond.mint === selectedDiamond?.mint) {
-      store.setState({ diamond: null });
-    } else {
-      store.setState({ diamond });
-    }
-  };
 
   const sortedStakedDiamonds = stakedDiamonds
     .sort((a, b) => {
@@ -152,6 +154,8 @@ const DiamondsGroup = function (props: any) {
             flexWrap: 'wrap',
             gap: '8px',
             // background: '#00000055',
+            padding: '8px',
+            justifyContent: 'center',
           }}
         >
           {sortedStakedDiamonds}

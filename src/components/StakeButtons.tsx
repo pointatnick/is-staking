@@ -14,20 +14,23 @@ import store from '../store/store';
 export default function StakeButtons(props: any) {
   const [selectedSerpent, setSelectedSerpent] = useState<any>({});
   const [selectedDiamond, setSelectedDiamond] = useState<any>({});
+  const [selectedPair, setSelectedPair] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const { publicKey, signTransaction, wallet } = useWallet();
   const { connection } = useConnection();
 
-  // set selected diamond
+  // set store data
   useEffect(() => {
     const removeListener = store.addListener((state: any) => {
-      const { serpent, diamond } = state;
+      const { serpent, diamond, pair } = state;
       setSelectedSerpent(serpent);
       setSelectedDiamond(diamond);
+      setSelectedPair(pair);
     });
-    const { serpent, diamond } = store.getState();
+    const { serpent, diamond, pair } = store.getState();
     setSelectedSerpent(serpent);
     setSelectedDiamond(diamond);
+    setSelectedPair(pair);
 
     return () => {
       removeListener();
@@ -249,7 +252,7 @@ export default function StakeButtons(props: any) {
   );
 
   // todo;
-  const unpairBtnShouldBeDisabled = false;
+  const unpairBtnShouldBeDisabled = selectedPair === null;
 
   return (
     <Box

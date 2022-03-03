@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { Message, PublicKey, Transaction } from '@solana/web3.js';
 import { stakeOrUnstakeSerpent } from '../serpents';
 import { CONNECTION } from '../../../src/config';
+import { stakeOrUnstakeDiamond } from '../diamonds';
 
 type Data = {
   success: boolean;
@@ -22,6 +23,7 @@ export default async function handler(
 
       // write time of staking
       await stakeOrUnstakeSerpent(mint, new Date(), true, publicKey);
+      await stakeOrUnstakeDiamond(mint, new Date(), true, publicKey);
 
       res.status(200).json({ success: true });
     } catch (error) {

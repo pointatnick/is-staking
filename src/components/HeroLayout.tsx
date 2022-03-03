@@ -73,21 +73,30 @@ export default function HeroLayout() {
             </Typography>
             <WalletMultiButton />
           </Box>
-          <Box sx={{ display: 'flex', gap: '16px' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '60px',
+              justifyContent: 'center',
+            }}
+          >
+            <Box>
               <StakeCounter
                 stakedCount={totalSerpentsStaked}
                 totalSupply={3333}
                 nft="serpents"
               />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <IceCounter serpents={serpents} diamonds={diamonds} />
+            </Box>
+            <Box>
               <StakeCounter
                 stakedCount={totalDiamondsStaked}
                 totalSupply={777}
                 nft="diamonds"
               />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <IceCounter serpents={serpents} diamonds={diamonds} />
             </Box>
           </Box>
         </Stack>

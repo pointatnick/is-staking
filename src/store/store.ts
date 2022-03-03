@@ -26,9 +26,11 @@ class Store {
   state: {
     diamond: UiDiamond | null;
     serpent: UiSerpent | null;
+    pair: any;
   } = {
     diamond: null,
     serpent: null,
+    pair: null,
   };
 
   listeners: any[] = [];

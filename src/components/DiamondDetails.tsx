@@ -1,6 +1,5 @@
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { useState, useEffect } from 'react';
 
 export default function DiamondDetails(props: any) {
   const { iceToCollect, name, rank, staked } = props;
