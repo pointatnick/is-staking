@@ -144,17 +144,15 @@ export default function IceCounter(props: any) {
         ).json();
 
         // audit ice collection
-        await (
-          await fetch('/api/ice/audit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              publicKey: publicKey.toBase58(),
-              ice: iceToWithdraw,
-              txId: tx,
-            }),
-          })
-        ).json();
+        await fetch('/api/ice/audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            publicKey: publicKey.toBase58(),
+            ice: iceToWithdraw,
+            tx,
+          }),
+        });
 
         if (!claimError) {
           location.reload();
@@ -167,7 +165,7 @@ export default function IceCounter(props: any) {
     }
   }, [publicKey, connection, signTransaction, wallet]);
 
-  return (
+  return publicKey ? (
     <Box>
       <Typography
         sx={{ color: 'white', fontFamily: 'Metamorphous' }}
@@ -183,5 +181,5 @@ export default function IceCounter(props: any) {
         </Button>
       </Box>
     </Box>
-  );
+  ) : null;
 }

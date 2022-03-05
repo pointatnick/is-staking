@@ -8,7 +8,7 @@ import {
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Message, PublicKey, Transaction } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
-import { DAO_PUBLIC_KEY } from '../config';
+import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
 import store from '../store/store';
 
 export default function StakeButtons(props: any) {
@@ -213,10 +213,159 @@ export default function StakeButtons(props: any) {
     wallet,
   ]);
 
-  const pairSerpent = function () {
-    // todo
-    console.log('pairing serpent', 'with diamond');
-  };
+  const pairSerpent = useCallback(() => {
+    (async () => {
+      if (publicKey) {
+        setLoading(true);
+
+        const { success } = await (
+          await fetch('/api/pairedSerpents/pair', {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              publicKey: publicKey.toBase58(),
+              diamondMint: selectedDiamond.mint,
+              serpentMint: selectedSerpent.mint,
+            }),
+          })
+        ).json();
+
+        setLoading(false);
+
+        // todo: error handling
+        if (success) {
+          location.reload();
+        }
+      }
+    })();
+  }, [publicKey, selectedDiamond, selectedSerpent]);
+
+  const unpairSerpent = useCallback(() => {
+    (async () => {
+      if (publicKey) {
+        setLoading(true);
+
+        const { success, iceToCollect } = await (
+          await fetch('/api/pairedSerpents/unpair', {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              publicKey: publicKey.toBase58(),
+              pairedSerpentMint: selectedPair.mint,
+            }),
+          })
+        ).json();
+
+        try {
+          if (iceToCollect) {
+            const mintToken = new Token(
+              connection,
+              ICE_TOKEN_MINT,
+              TOKEN_PROGRAM_ID,
+              //@ts-ignore
+              wallet
+            );
+
+            // create associated token accounts for my token if they don't exist yet
+            // owner might never have had ICE before
+            const fromTokenAccount =
+              await mintToken.getOrCreateAssociatedAccountInfo(DAO_PUBLIC_KEY);
+            const toTokenAddress = await Token.getAssociatedTokenAddress(
+              ASSOCIATED_TOKEN_PROGRAM_ID,
+              TOKEN_PROGRAM_ID,
+              ICE_TOKEN_MINT,
+              publicKey
+            );
+
+            const toTokenAccount = await connection.getAccountInfo(
+              toTokenAddress
+            );
+
+            const instructions = [];
+            if (toTokenAccount === null) {
+              // if destination associated token account doesn't exist, make one
+              instructions.push(
+                Token.createAssociatedTokenAccountInstruction(
+                  ASSOCIATED_TOKEN_PROGRAM_ID,
+                  TOKEN_PROGRAM_ID,
+                  ICE_TOKEN_MINT,
+                  toTokenAddress,
+                  publicKey,
+                  publicKey
+                )
+              );
+            }
+
+            instructions.push(
+              Token.createTransferCheckedInstruction(
+                TOKEN_PROGRAM_ID,
+                fromTokenAccount.address,
+                ICE_TOKEN_MINT,
+                toTokenAddress,
+                DAO_PUBLIC_KEY,
+                [],
+                iceToCollect * 1e9,
+                9
+              )
+            );
+
+            // create and sign transaction, serialize and send for user to sign
+            const transaction = new Transaction().add(...instructions);
+            // requires user to sign
+            transaction.feePayer = publicKey;
+            transaction.recentBlockhash = (
+              await connection.getRecentBlockhash()
+            ).blockhash;
+
+            //@ts-ignore
+            const tx = await signTransaction(transaction);
+            const txMessage = tx.serializeMessage();
+            const signature = tx.signatures.filter(
+              (s) => s.publicKey.toBase58() === publicKey.toBase58()
+            )[0].signature;
+
+            // claim ICE
+            // TODO: reflect this somewhere
+            const { error: claimError } = await (
+              await fetch('/api/staking/withdraw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  txMessage,
+                  signature,
+                  publicKey: publicKey.toBase58(),
+                }),
+              })
+            ).json();
+
+            // audit ice collection
+            await fetch('/api/ice/audit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                publicKey: publicKey.toBase58(),
+                ice: iceToCollect,
+                tx,
+              }),
+            });
+
+            if (!claimError) {
+              location.reload();
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        } finally {
+          setLoading(false);
+        }
+
+        // todo: error handling
+        if (success) {
+          location.reload();
+        }
+      }
+    })();
+  }, [publicKey, selectedPair]);
 
   const stakeBtnShouldBeDisabled = function () {
     if (selectedDiamond && selectedSerpent) {
@@ -238,20 +387,30 @@ export default function StakeButtons(props: any) {
     }
 
     if (selectedDiamond) {
-      return !selectedDiamond.isStaked;
+      return selectedDiamond.isPaired || !selectedDiamond.isStaked;
     } else if (selectedSerpent) {
-      return !selectedSerpent.isStaked;
+      return selectedSerpent.isPaired || !selectedSerpent.isStaked;
     }
 
     return true;
   };
 
-  const pairBtnShouldBeDisabled = !(
-    // only enable paired button if both NFTs are staked
-    (selectedDiamond?.isStaked && selectedSerpent?.isStaked)
-  );
+  const pairBtnShouldBeDisabled = function () {
+    if (selectedDiamond && selectedSerpent) {
+      // return false if either are paired
+      if (selectedDiamond.isPaired || selectedSerpent.isPaired) {
+        return true;
+      }
 
-  // todo;
+      return !(
+        // only enable paired button if both NFTs are staked
+        (selectedDiamond?.isStaked && selectedSerpent?.isStaked)
+      );
+    }
+
+    return true;
+  };
+
   const unpairBtnShouldBeDisabled = selectedPair === null;
 
   return (
@@ -305,7 +464,7 @@ export default function StakeButtons(props: any) {
           },
         }}
         onClick={pairSerpent}
-        disabled={pairBtnShouldBeDisabled || loading}
+        disabled={pairBtnShouldBeDisabled() || loading}
       >
         Pair
       </Button>
@@ -318,7 +477,7 @@ export default function StakeButtons(props: any) {
             backgroundColor: '#39322655',
           },
         }}
-        onClick={pairSerpent}
+        onClick={unpairSerpent}
         disabled={unpairBtnShouldBeDisabled || loading}
       >
         Unpair

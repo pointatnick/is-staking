@@ -27,7 +27,6 @@ export default async function handler(
     await CONNECTION.sendRawTransaction(transaction.serialize());
     await stakeOrUnstakeSerpent(mint, new Date(), false, null);
     await stakeOrUnstakeDiamond(mint, new Date(), false, null);
-    // TODO: check if pairedSerpent, in that case, set isPaired to false and zero out iceToCollect
     res.status(200).json({ error: false });
   } catch (error) {
     console.error(error);

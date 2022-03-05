@@ -7,7 +7,6 @@ import DiamondDetails from './DiamondDetails';
 import NftImage from './NftImage';
 import SerpentDetails from './SerpentDetails';
 
-// todo: unpairing logic: give ICE when unpairing, update serpent's lastStaked
 const PairsGroup = function (props: any) {
   // todo: write type
   const [pairedSerpents, setPairedSerpents] = useState<any[]>([]);

@@ -2,7 +2,10 @@ import { PublicKey } from '@solana/web3.js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CONNECTION, DAO_PUBLIC_KEY } from '../../../../src/config';
 import { getAllSerpents } from '../../serpents';
-import { getStakedSerpentMintsForPublicKey } from '../../serpents/staked';
+import {
+  getStakedSerpentMintsForPublicKey,
+  getStakedSerpentsForPublicKey,
+} from '../../serpents/staked';
 import { Serpent } from '../../types';
 
 export async function getChainSerpents(publicKey: string, serpents: Serpent[]) {
@@ -40,34 +43,36 @@ export async function getChainSerpents(publicKey: string, serpents: Serpent[]) {
                 name,
                 imageUrl,
                 lastStaked,
+                lastPaired,
                 isStaked,
                 icePerDay,
                 isPaired,
               } = serpents[index];
 
-              let iceToCollect = 0;
-              if (lastStaked && isStaked && !isPaired) {
-                // calculate each serpent's iceToCollect
-                // ignored paired ones here, that's calculated in the paired section
-                let icePerSecond = icePerDay / 24 / 60 / 60;
-                let nowDate = new Date().toISOString();
-                let stakedDate = Date.parse(lastStaked.toISOString());
-                let now = Date.parse(nowDate);
-                let diff = now - stakedDate;
+              // let iceToCollect = 0;
+              // if (lastStaked && isStaked && !isPaired) {
+              //   // calculate each serpent's iceToCollect
+              //   // ignored paired ones here, that's calculated in the paired section
+              //   let icePerSecond = icePerDay / 24 / 60 / 60;
+              //   let nowDate = new Date().toISOString();
+              //   let stakedDate = Date.parse(lastStaked.toISOString());
+              //   let now = Date.parse(nowDate);
+              //   let diff = now - stakedDate;
 
-                // use diff to calculate ICE so far
-                let seconds = Math.floor(diff / 1000);
-                iceToCollect = icePerSecond * seconds;
-              }
+              //   // use diff to calculate ICE so far
+              //   let seconds = Math.floor(diff / 1000);
+              //   iceToCollect = icePerSecond * seconds;
+              // }
               stakedMintsForUser.push({
                 ...item,
                 rank,
                 name,
                 imageUrl,
                 lastStaked,
+                lastPaired,
                 isStaked,
                 isPaired,
-                iceToCollect,
+                icePerDay,
               });
               break;
             }
@@ -87,25 +92,21 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { publicKey } = req.query;
-  const serpents = await getAllSerpents();
-  const chainSerpents = await getChainSerpents(publicKey as string, serpents);
-  const reducer = (prev: number, cur: any) => prev + cur.iceToCollect;
-  let chainSerpentsIce = chainSerpents
-    .filter((x: Serpent) => !x.isPaired)
-    .reduce(reducer, 0);
-  let chainDiamondMints = chainSerpents.map((x: any) => x.mint);
-  // supplement incomplete chain data + db data
-  let ice =
-    chainSerpentsIce +
-    serpents
-      .filter(
-        (x: Serpent) =>
-          x.staker === publicKey &&
-          x.isStaked &&
-          !x.isPaired &&
-          !chainDiamondMints.includes(x.mint)
-      )
-      .reduce(reducer, 0);
-  // console.log('serpents', ice);
+  const serpents = await getStakedSerpentsForPublicKey(publicKey as string);
+  const reducer = (prev: number, cur: any) => {
+    const icePerSecond = cur.icePerDay / 24 / 60 / 60;
+    const stakedDate = Date.parse(cur.lastStaked.toISOString());
+    const old = cur.isPaired
+      ? Date.parse(cur.lastPaired.toISOString())
+      : Date.parse(new Date().toISOString());
+    let diff = old - stakedDate;
+
+    // use diff to calculate ICE so far
+    let seconds = Math.floor(diff / 1000);
+    return prev + icePerSecond * seconds;
+  };
+
+  const ice = serpents.reduce(reducer, 0);
+  console.log(ice);
   res.status(200).json({ ice });
 }

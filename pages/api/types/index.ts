@@ -9,17 +9,17 @@ export type Nft = {
   rank: number;
   staker: string;
   tokenAccount: string;
+  lastStaked: Date | null;
 };
 
 export type Diamond = Nft & {
   isStaked: boolean;
-  lastStaked: Date | null;
   iceToCollect: number;
 };
 
 export type Serpent = Nft & {
   isStaked: boolean;
-  lastStaked: Date | null;
+  lastPaired: Date | null;
   icePerDay: number;
 };
 

@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import * as bs58 from 'bs58';
 import { Message, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import { CONNECTION } from '../../../src/config';
-import { stakeOrUnstakeSerpent } from '../serpents';
 import nacl from 'tweetnacl';
 
 export default async function handler(
@@ -28,7 +27,6 @@ export default async function handler(
   // TODO: retry transactions
   try {
     await CONNECTION.sendRawTransaction(transaction.serialize());
-    // await stakeOrUnstakeSerpent(mint, new Date(), true, publicKey);
     res.status(200).json({ error: false });
   } catch (error) {
     console.error(error);

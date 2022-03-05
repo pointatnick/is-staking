@@ -16,7 +16,7 @@ const config = {
     iceTokenMintPublicKey: 'icex2Fy2KtXjfiAAUEHLPHu7XKDLvwiyVUPP9PNpSkF',
     serpentsCollection: 'Serpents',
     diamondsCollection: 'diamonds',
-    pairsCollection: 'test_paired_serpents',
+    pairsCollection: 'paired_serpents',
   },
 };
 export const RPC_URL = config[process.env.SOLANA_NETWORK].rpcUrl;

@@ -24,6 +24,7 @@ export default async function handler(
     };
 
     await insertClaimIceAudit(iceAudit);
+    res.status(200).json({ error: false });
   } else {
     res.status(404);
   }
