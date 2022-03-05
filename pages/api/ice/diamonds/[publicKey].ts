@@ -10,5 +10,6 @@ export default async function handler(
   let diamonds = await getStakedDiamondsForPublicKey(publicKey as string);
   let reducer = (prev: number, cur: Diamond) => prev + cur.iceToCollect;
   let ice = diamonds.reduce(reducer, 0);
+  console.log('diamonds', ice);
   res.status(200).json({ ice });
 }

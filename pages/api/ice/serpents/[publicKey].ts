@@ -1,7 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CONNECTION, DAO_PUBLIC_KEY } from '../../../../src/config';
-import { getAllSerpents } from '../../serpents';
 import {
   getStakedSerpentMintsForPublicKey,
   getStakedSerpentsForPublicKey,
@@ -49,20 +48,6 @@ export async function getChainSerpents(publicKey: string, serpents: Serpent[]) {
                 isPaired,
               } = serpents[index];
 
-              // let iceToCollect = 0;
-              // if (lastStaked && isStaked && !isPaired) {
-              //   // calculate each serpent's iceToCollect
-              //   // ignored paired ones here, that's calculated in the paired section
-              //   let icePerSecond = icePerDay / 24 / 60 / 60;
-              //   let nowDate = new Date().toISOString();
-              //   let stakedDate = Date.parse(lastStaked.toISOString());
-              //   let now = Date.parse(nowDate);
-              //   let diff = now - stakedDate;
-
-              //   // use diff to calculate ICE so far
-              //   let seconds = Math.floor(diff / 1000);
-              //   iceToCollect = icePerSecond * seconds;
-              // }
               stakedMintsForUser.push({
                 ...item,
                 rank,
@@ -96,6 +81,7 @@ export default async function handler(
   const reducer = (prev: number, cur: any) => {
     const icePerSecond = cur.icePerDay / 24 / 60 / 60;
     const stakedDate = Date.parse(cur.lastStaked.toISOString());
+    console.log(cur);
     const old = cur.isPaired
       ? Date.parse(cur.lastPaired.toISOString())
       : Date.parse(new Date().toISOString());
@@ -107,6 +93,6 @@ export default async function handler(
   };
 
   const ice = serpents.reduce(reducer, 0);
-  console.log(ice);
+  console.log('serpents', ice);
   res.status(200).json({ ice });
 }

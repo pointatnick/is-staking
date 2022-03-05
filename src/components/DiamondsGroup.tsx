@@ -65,7 +65,6 @@ const DiamondsGroup = function (props: any) {
         const { stakedDiamonds: allStakedDiamonds } = await (
           await fetch(`/api/diamonds/staked?publicKey=${publicKey.toString()}`)
         ).json();
-        console.log(allStakedDiamonds);
 
         setStakedDiamonds(allStakedDiamonds);
         setLoading(false);

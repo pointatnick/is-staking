@@ -92,7 +92,6 @@ export default function StakeButtons(props: any) {
 
           //@ts-ignore
           const signedTx = await signTransaction(transaction);
-          console.log(signedTx);
           const txMessage = signedTx.serializeMessage();
           const { signature } = signedTx.signatures.filter(
             (s) => s.publicKey.toBase58() === publicKey.toBase58()
@@ -137,7 +136,6 @@ export default function StakeButtons(props: any) {
     (async () => {
       if (publicKey) {
         let selectedNft = selectedDiamond ? selectedDiamond : selectedSerpent;
-        console.log(selectedNft);
 
         // Unstake the diamond
         const mintToken = new Token(
@@ -365,7 +363,7 @@ export default function StakeButtons(props: any) {
         }
       }
     })();
-  }, [publicKey, selectedPair]);
+  }, [publicKey, selectedPair, connection, signTransaction, wallet]);
 
   const stakeBtnShouldBeDisabled = function () {
     if (selectedDiamond && selectedSerpent) {

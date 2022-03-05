@@ -21,7 +21,6 @@ export default function StakeButton(props: any) {
     setLoading(true);
     (async () => {
       if (publicKey) {
-        console.log(props.mint);
         // Stake the diamond
         const mint = new PublicKey(props.mint);
 
@@ -71,7 +70,6 @@ export default function StakeButton(props: any) {
 
           //@ts-ignore
           const signedTx = await signTransaction(transaction);
-          console.log(signedTx);
           const txMessage = signedTx.serializeMessage();
           const { signature } = signedTx.signatures.filter(
             (s) => s.publicKey.toBase58() === publicKey.toBase58()

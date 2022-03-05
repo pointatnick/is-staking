@@ -20,7 +20,6 @@ export default async function handler(
     daoKeypair.secretKey
   );
   const transaction = Transaction.populate(Message.from(txMessage.data));
-  console.log(transaction);
   transaction.addSignature(user, signature.data);
   transaction.addSignature(daoKeypair.publicKey, Buffer.from(daoSignature));
 

@@ -47,13 +47,27 @@ export default async function handler(
       let update: UpdateFilter<Diamond> = {
         $set: { iceToCollect: 0, staker: publicKey },
       };
+      const now = new Date();
       await updateDiamondsForStaker(filter, update);
       await updateSerpentsForStaker(filter, {
-        $set: { lastStaked: new Date(), staker: publicKey },
+        $set: {
+          staker: publicKey,
+          lastStaked: now,
+          lastPaired: now,
+        },
       });
       await updatePairedSerpentsForStaker(
-        { staker: publicKey, isPaired: true },
-        update
+        {
+          staker: publicKey,
+          isPaired: true,
+        },
+        {
+          $set: {
+            iceToCollect: 0,
+            staker: publicKey,
+            lastPaired: now,
+          },
+        }
       );
 
       // there may be some NFTs left over whose staker is not recorded in DB
@@ -63,7 +77,16 @@ export default async function handler(
         await updateDiamond({ mint }, update);
       }
       for (const { mint } of serpents) {
-        await updateSerpent({ mint }, update);
+        await updateSerpent(
+          { mint },
+          {
+            $set: {
+              staker: publicKey,
+              lastStaked: now,
+              lastPaired: now,
+            },
+          }
+        );
       }
 
       res.status(200).json({ success: true });

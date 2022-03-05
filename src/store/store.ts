@@ -45,7 +45,6 @@ class Store {
 
   setState(state: any) {
     this.state = { ...this.state, ...state };
-    console.log('new state', this.state);
     for (const listener of this.listeners) {
       listener(this.state);
     }

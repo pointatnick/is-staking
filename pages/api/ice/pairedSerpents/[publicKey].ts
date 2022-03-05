@@ -13,5 +13,6 @@ export default async function handler(
   let ice = pairedSerpents
     .filter((x: Diamond) => x.staker === publicKey && x.isPaired)
     .reduce(reducer, 0);
+  console.log('pairs', ice);
   res.status(200).json({ ice });
 }
