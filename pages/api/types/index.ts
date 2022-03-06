@@ -40,7 +40,7 @@ export type PairedSerpent = Nft & {
 
 export type IceAudit = {
   staker: string;
+  claimType: string;
   iceCollected: number;
-  txId: string | undefined;
   date: Date;
 };

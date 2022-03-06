@@ -57,14 +57,24 @@ export default function IceCounter(props: any) {
       let { ice: serpentsIce } = await getSerpentsIce(publicKey.toBase58());
       let iceToWithdraw = pairedIce + diamondsIce + serpentsIce;
 
-      try {
-        // zero out iceToCollect
-        fetch('/api/ice/withdraw', {
+      // audit ice collection
+      const { userCanWithdraw, auditId } = await (
+        await fetch('/api/ice/audit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ publicKey: publicKey.toBase58() }),
-        });
+          body: JSON.stringify({
+            publicKey: publicKey.toBase58(),
+            type: 'claimAll',
+            ice: iceToWithdraw,
+          }),
+        })
+      ).json();
 
+      if (!userCanWithdraw) {
+        return;
+      }
+
+      try {
         const mintToken = new Token(
           connection,
           ICE_TOKEN_MINT,
@@ -143,22 +153,28 @@ export default function IceCounter(props: any) {
           })
         ).json();
 
-        // audit ice collection
-        await fetch('/api/ice/audit', {
+        if (claimError) {
+          throw new Error('claim error');
+        }
+
+        // zero out ICE
+        await fetch('/api/ice/withdraw', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             publicKey: publicKey.toBase58(),
-            ice: iceToWithdraw,
-            tx,
           }),
         });
 
-        if (!claimError) {
-          location.reload();
-        }
+        location.reload();
       } catch (error) {
         console.log(error);
+        // delete most recent audit entry
+        await fetch('/api/ice/audit', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ auditId }),
+        });
       } finally {
         setLoading(false);
       }

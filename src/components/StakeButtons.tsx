@@ -243,16 +243,30 @@ export default function StakeButtons(props: any) {
       if (publicKey) {
         setLoading(true);
 
-        const { success, iceToCollect } = await (
-          await fetch('/api/pairedSerpents/unpair', {
-            method: 'post',
+        const { iceToCollect } = await (
+          await fetch(
+            `/api/pairedSerpents/unpair?publicKey=${publicKey.toBase58()}&pairedSerpentMint=${
+              selectedPair.mint
+            }`
+          )
+        ).json();
+
+        // audit ice collection
+        const { userCanWithdraw, auditId } = await (
+          await fetch('/api/ice/audit', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               publicKey: publicKey.toBase58(),
-              pairedSerpentMint: selectedPair.mint,
+              type: `unpair-${selectedPair.mint}-${selectedPair.diamondMint}`,
+              iceCollected: iceToCollect,
             }),
           })
         ).json();
+
+        if (!userCanWithdraw) {
+          return;
+        }
 
         try {
           if (iceToCollect) {
@@ -336,30 +350,31 @@ export default function StakeButtons(props: any) {
               })
             ).json();
 
-            // audit ice collection
-            await fetch('/api/ice/audit', {
+            if (claimError) {
+              throw new Error('claim error');
+            }
+
+            await fetch('/api/pairedSerpents/unpair', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 publicKey: publicKey.toBase58(),
-                ice: iceToCollect,
-                tx,
+                pairedSerpentMint: selectedPair.mint,
               }),
             });
 
-            if (!claimError) {
-              location.reload();
-            }
+            location.reload();
           }
         } catch (error) {
           console.log(error);
+          // delete most recent audit entry
+          await fetch('/api/ice/audit', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ auditId }),
+          });
         } finally {
           setLoading(false);
-        }
-
-        // todo: error handling
-        if (success) {
-          location.reload();
         }
       }
     })();

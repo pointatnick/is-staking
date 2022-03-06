@@ -81,7 +81,6 @@ export default async function handler(
   const reducer = (prev: number, cur: any) => {
     const icePerSecond = cur.icePerDay / 24 / 60 / 60;
     const stakedDate = Date.parse(cur.lastStaked.toISOString());
-    console.log(cur);
     const old = cur.isPaired
       ? Date.parse(cur.lastPaired.toISOString())
       : Date.parse(new Date().toISOString());
