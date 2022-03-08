@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -10,11 +11,14 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Transaction } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
 import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
+import LoadingProgress from './LoadingProgress';
 
 export default function IceCounter(props: any) {
   const { serpents, diamonds } = props;
   const [totalIce, setTotalIce] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [time, setTime] = useState(0);
   const { publicKey, signTransaction, wallet } = useWallet();
   const { connection } = useConnection();
 
@@ -58,7 +62,7 @@ export default function IceCounter(props: any) {
       let iceToWithdraw = pairedIce + diamondsIce + serpentsIce;
 
       // audit ice collection
-      const { userCanWithdraw, auditId } = await (
+      const { userCanWithdraw, auditId, remainingTime } = await (
         await fetch('/api/ice/audit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -71,6 +75,9 @@ export default function IceCounter(props: any) {
       ).json();
 
       if (!userCanWithdraw) {
+        setTime(remainingTime);
+        setOpen(true);
+        setLoading(false);
         return;
       }
 
@@ -192,10 +199,31 @@ export default function IceCounter(props: any) {
       <Box
         sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}
       >
-        <Button variant="contained" onClick={onClaim}>
-          Claim $ICE
-        </Button>
+        {loading ? (
+          <LoadingProgress />
+        ) : (
+          <Button variant="contained" onClick={onClaim}>
+            Claim $ICE
+          </Button>
+        )}
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={open}
+          autoHideDuration={10000}
+          onClose={() => setOpen(false)}
+          message={`Please wait ${msToTimeString(
+            time
+          )} before claiming ICE again`}
+        />
       </Box>
     </Box>
   ) : null;
 }
+
+const msToTimeString = function (duration: number) {
+  const seconds = Math.floor((duration / 1000) % 60);
+  const minutes = Math.floor((duration / (1000 * 60)) % 60);
+  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+
+  return `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+};

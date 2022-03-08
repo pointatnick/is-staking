@@ -40,7 +40,7 @@ export async function checkForRecentAudits(
     })
     .toArray();
 
-  return results.length > 0;
+  return results[0];
 }
 
 export default async function handler(
@@ -51,16 +51,28 @@ export default async function handler(
     // check if publicKey had audit 24hrs ago
     const publicKey = req.body.publicKey;
     const claimType = req.body.type;
-    const userHasRecentAudits = await checkForRecentAudits(
-      publicKey,
-      claimType
-    );
+    const recentAudit = await checkForRecentAudits(publicKey, claimType);
 
-    if (userHasRecentAudits) {
-      res.status(200).json({ userCanWithdraw: false });
+    if (recentAudit) {
+      const recentAuditDate = new Date(recentAudit.date);
+      const MILLISECONDS_PER_DAY = 86400000;
+      const now = Date.now();
+      const remainingTime =
+        MILLISECONDS_PER_DAY -
+        (now -
+          Date.UTC(
+            recentAuditDate.getUTCFullYear(),
+            recentAuditDate.getUTCMonth(),
+            recentAuditDate.getUTCDate(),
+            recentAuditDate.getUTCHours(),
+            recentAuditDate.getUTCMinutes(),
+            recentAuditDate.getUTCSeconds(),
+            recentAuditDate.getUTCMilliseconds()
+          ));
+      res.status(200).json({ userCanWithdraw: false, remainingTime });
     } else {
       // write mongo audit with how much was sent to which address at what time
-      let iceAudit: OptionalUnlessRequiredId<IceAudit> = {
+      const iceAudit: OptionalUnlessRequiredId<IceAudit> = {
         staker: publicKey,
         claimType,
         iceCollected: req.body.ice,

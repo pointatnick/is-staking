@@ -147,7 +147,6 @@ const SerpentsGroup = function (props: any) {
           sx={{
             display: 'flex',
             gap: '8px',
-            flex: 1,
             flexWrap: 'wrap',
             // background: '#00000055',
             padding: '8px',
