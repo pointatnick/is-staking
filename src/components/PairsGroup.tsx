@@ -112,8 +112,7 @@ const PairsGroup = function (props: any) {
         <Box
           sx={{
             display: 'flex',
-            gap: '8px',
-            flex: 1,
+            gap: '24px',
             flexWrap: 'wrap',
             // background: '#00000055',
             padding: '8px',

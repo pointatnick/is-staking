@@ -1,3 +1,4 @@
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
@@ -211,10 +212,11 @@ export default function IceCounter(props: any) {
           open={open}
           autoHideDuration={10000}
           onClose={() => setOpen(false)}
-          message={`Please wait ${msToTimeString(
-            time
-          )} before claiming ICE again`}
-        />
+        >
+          <Alert severity="warning" sx={{ fontSize: '16px' }}>
+            Please wait {msToTimeString(time)} before claiming ICE again
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   ) : null;
