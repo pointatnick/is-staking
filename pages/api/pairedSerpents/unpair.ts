@@ -13,7 +13,8 @@ type Data = {
 export async function unpairNfts(pairedSerpent: PairedSerpent) {
   await updatePairedSerpent(
     { mint: pairedSerpent.mint },
-    { $set: { isPaired: false, iceToCollect: 0 } }
+    { $set: { isPaired: false, iceToCollect: 0 } },
+    { upsert: false }
   );
   await updateDiamond(
     { mint: pairedSerpent.diamondMint },

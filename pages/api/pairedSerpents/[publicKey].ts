@@ -6,7 +6,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 export async function getAllPairedSerpents() {
   const { serpentDb: db } = await connectToDatabase();
-  const pairs = await db.collection(PAIRS_COLLECTION).find({}).toArray();
+  const cursor = db.collection(PAIRS_COLLECTION).find<PairedSerpent>({});
+  const pairs = await cursor.toArray();
+  cursor.close();
   return pairs;
 }
 
@@ -17,16 +19,19 @@ export async function getPairedSerpent(mint: string) {
 
 export async function getPairedSerpents(staker: string) {
   const { serpentDb: db } = await connectToDatabase();
-  return await db
+  const cursor = db
     .collection(PAIRS_COLLECTION)
-    .find({ staker, isPaired: true })
-    .toArray();
+    .find<PairedSerpent>({ staker, isPaired: true });
+  const docs = await cursor.toArray();
+  cursor.close();
+
+  return docs;
 }
 
 export async function updatePairedSerpent(
   filter: Filter<PairedSerpent>,
   update: UpdateFilter<PairedSerpent>,
-  options: UpdateOptions | null = null
+  options: UpdateOptions
 ) {
   const { serpentDb } = await connectToDatabase();
   await serpentDb

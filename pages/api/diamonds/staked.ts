@@ -76,10 +76,12 @@ export async function getStakedDiamondMintsForPublicKey(publicKey: string) {
 
 export async function getAllStakedDiamonds() {
   const { diamondDb: db } = await connectToDatabase();
-  return await db
+  const cursor = db
     .collection(DIAMONDS_COLLECTION)
-    .find({ isStaked: true })
-    .toArray();
+    .find<Diamond>({ isStaked: true });
+  const docs = await cursor.toArray();
+  cursor.close();
+  return docs;
 }
 
 export async function getStakedDiamondsForPublicKey(publicKey: string) {

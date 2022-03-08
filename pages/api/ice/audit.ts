@@ -31,15 +31,13 @@ export async function checkForRecentAudits(
     d.setHours(d.getHours() - WITHDRAWAL_INTERVAL_HOURS)
   );
 
-  const results = await serpentDb
-    .collection(ICE_AUDIT_COLLECTION)
-    .find({
-      staker: publicKey,
-      claimType,
-      date: { $gte: boundary },
-    })
-    .toArray();
-
+  const cursor = serpentDb.collection(ICE_AUDIT_COLLECTION).find<IceAudit>({
+    staker: publicKey,
+    claimType,
+    date: { $gte: boundary },
+  });
+  const results = await cursor.toArray();
+  cursor.close();
   return results[0];
 }
 

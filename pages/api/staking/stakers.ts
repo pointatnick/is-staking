@@ -5,12 +5,13 @@ import { Serpent } from '../types';
 
 export async function getAllStakers() {
   const { serpentDb: db } = await connectToDatabase();
-  const serpentsWithStakers = await db
+  const cursor = db
     .collection(SERPENTS_COLLECTION)
-    .find({ staker: { $ne: null } })
-    .toArray();
+    .find<Serpent>({ staker: { $ne: null } });
+  const serpentsWithStakers = await cursor.toArray();
+  cursor.close();
 
-  return serpentsWithStakers.map((serpent: Serpent) => serpent.staker);
+  return serpentsWithStakers.map((serpent) => serpent.staker);
 }
 
 export default async function handler(

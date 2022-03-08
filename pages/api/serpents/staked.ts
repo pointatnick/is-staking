@@ -25,10 +25,11 @@ export async function getStakedSerpentMintsForPublicKey(publicKey: string) {
 
 export async function getAllStakedSerpents() {
   const { serpentDb: db } = await connectToDatabase();
-  const serpents = await db
+  const cursor = db
     .collection(SERPENTS_COLLECTION)
-    .find({ isStaked: true })
-    .toArray();
+    .find<Serpent>({ isStaked: true });
+  const serpents = await cursor.toArray();
+  cursor.close();
   return serpents;
 }
 
