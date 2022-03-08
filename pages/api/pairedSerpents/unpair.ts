@@ -35,22 +35,31 @@ export default async function handler(
     try {
       // get data from db
       const pairedSerpent = await getPairedSerpent(pairedSerpentMint as string);
-      const userOwnsPair = pairedSerpent.staker === publicKey;
+      if (pairedSerpent !== null) {
+        const userOwnsPair = pairedSerpent.staker === publicKey;
 
-      if (userOwnsPair && pairedSerpent.isPaired) {
-        // on unpairing, give back ICE from regular staked serpent too
-        const serpent = await getSerpent(pairedSerpentMint as string);
-        const icePerSecond = serpent.icePerDay / 24 / 60 / 60;
-        const stakedDate = Date.parse(serpent.lastStaked.toISOString());
-        const old = Date.parse(serpent.lastPaired.toISOString());
-        let diff = old - stakedDate;
-        let seconds = Math.floor(diff / 1000);
-        let serpentIce = icePerSecond * seconds;
-        let iceToCollect = pairedSerpent.iceToCollect + serpentIce;
+        if (userOwnsPair && pairedSerpent.isPaired) {
+          // on unpairing, give back ICE from regular staked serpent too
+          const serpent = await getSerpent(pairedSerpentMint as string);
 
-        res.status(200).json({ success: true, iceToCollect });
-      } else {
-        res.status(400).json({ success: false, errorCode: 3400 });
+          if (serpent != null) {
+            const icePerSecond = serpent.icePerDay / 24 / 60 / 60;
+            //@ts-ignore
+            const stakedDate = Date.parse(serpent.lastStaked.toISOString());
+            //@ts-ignore
+            const old = Date.parse(serpent.lastPaired.toISOString());
+            let diff = old - stakedDate;
+            let seconds = Math.floor(diff / 1000);
+            let serpentIce = icePerSecond * seconds;
+            let iceToCollect = pairedSerpent.iceToCollect + serpentIce;
+
+            res.status(200).json({ success: true, iceToCollect });
+          } else {
+            res.status(400).json({ success: false, errorCode: 3400 });
+          }
+        } else {
+          res.status(400).json({ success: false, errorCode: 3400 });
+        }
       }
     } catch (error) {
       console.error(error);
@@ -61,13 +70,14 @@ export default async function handler(
     try {
       // get data from db
       const pairedSerpent = await getPairedSerpent(pairedSerpentMint);
-      const userOwnsPair = pairedSerpent.staker === publicKey;
-
-      if (userOwnsPair && pairedSerpent.isPaired) {
-        await unpairNfts(pairedSerpent);
-        res.status(200).json({ success: true });
-      } else {
-        res.status(400).json({ success: false, errorCode: 3400 });
+      if (pairedSerpent !== null) {
+        const userOwnsPair = pairedSerpent.staker === publicKey;
+        if (userOwnsPair && pairedSerpent.isPaired) {
+          await unpairNfts(pairedSerpent);
+          res.status(200).json({ success: true });
+        } else {
+          res.status(400).json({ success: false, errorCode: 3400 });
+        }
       }
     } catch (error) {
       console.error(error);

@@ -6,12 +6,15 @@ import type { Diamond } from '../types';
 
 export async function getAllDiamonds() {
   const { diamondDb: db } = await connectToDatabase();
-  return await db.collection(DIAMONDS_COLLECTION).find({}).toArray();
+  const cursor = db.collection(DIAMONDS_COLLECTION).find<Diamond>({});
+  const diamonds = await cursor.toArray();
+  cursor.close();
+  return diamonds;
 }
 
 export async function getDiamond(mint: string) {
   const { diamondDb: db } = await connectToDatabase();
-  return await db.collection(DIAMONDS_COLLECTION).findOne({ mint });
+  return await db.collection(DIAMONDS_COLLECTION).findOne<Diamond>({ mint });
 }
 
 export async function stakeOrUnstakeDiamond(

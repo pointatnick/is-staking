@@ -8,5 +8,6 @@ export async function updateDiamondsForStaker(
   update: UpdateFilter<Diamond>
 ) {
   const { diamondDb: db } = await connectToDatabase();
+  //@ts-ignore
   await db.collection(DIAMONDS_COLLECTION).updateMany(filter, update);
 }

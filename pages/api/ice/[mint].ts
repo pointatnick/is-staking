@@ -2,9 +2,16 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSerpent } from '../serpents';
 
 export async function getIce(mint: string) {
-  const { lastStaked, icePerDay } = await getSerpent(mint);
-
+  const serpent = await getSerpent(mint);
+  if (!serpent) {
+    return 0;
+  }
+  const { lastStaked, icePerDay } = serpent;
+  if (!lastStaked) {
+    return 0;
+  }
   const icePerSecond = icePerDay / 24 / 60 / 60;
+  //@ts-ignore
   const stakedDate = Date.parse(lastStaked);
   const nowDate = new Date().toISOString();
   const now = Date.parse(nowDate);

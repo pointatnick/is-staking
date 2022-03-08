@@ -48,21 +48,24 @@ export default async function handler(
       // get data from db
       const serpent = await getSerpent(serpentMint);
       const diamond = await getDiamond(diamondMint);
-      const userOwnsSerpent = serpent.staker === publicKey;
-      const userOwnsDiamond = diamond.staker === publicKey;
-      const pairExists = serpent.isPaired || diamond.isPaired;
 
-      if (
-        userOwnsSerpent &&
-        userOwnsDiamond &&
-        serpent.isStaked &&
-        diamond.isStaked &&
-        !pairExists
-      ) {
-        await pairNfts(diamond, serpent);
-        res.status(200).json({ success: true });
-      } else {
-        res.status(400).json({ success: false, errorCode: 3400 });
+      if (serpent !== null && diamond !== null) {
+        const userOwnsSerpent = serpent.staker === publicKey;
+        const userOwnsDiamond = diamond.staker === publicKey;
+        const pairExists = serpent.isPaired || diamond?.isPaired;
+
+        if (
+          userOwnsSerpent &&
+          userOwnsDiamond &&
+          serpent.isStaked &&
+          diamond.isStaked &&
+          !pairExists
+        ) {
+          await pairNfts(diamond, serpent);
+          res.status(200).json({ success: true });
+        } else {
+          res.status(400).json({ success: false, errorCode: 3400 });
+        }
       }
     } catch (error) {
       console.error(error);

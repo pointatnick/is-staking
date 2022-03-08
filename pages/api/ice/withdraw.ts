@@ -17,6 +17,7 @@ export async function updateDiamondsForStaker(
   update: UpdateFilter<Diamond>
 ) {
   const { diamondDb: db } = await connectToDatabase();
+  //@ts-ignore
   await db.collection(DIAMONDS_COLLECTION).updateMany(filter, update);
 }
 
@@ -25,6 +26,7 @@ export async function updateSerpentsForStaker(
   update: UpdateFilter<Diamond>
 ) {
   const { serpentDb: db } = await connectToDatabase();
+  //@ts-ignore
   await db.collection(SERPENTS_COLLECTION).updateMany(filter, update);
 }
 
@@ -33,6 +35,7 @@ export async function updatePairedSerpentsForStaker(
   update: UpdateFilter<Diamond>
 ) {
   const { serpentDb: db } = await connectToDatabase();
+  //@ts-ignore
   await db.collection(PAIRS_COLLECTION).updateMany(filter, update);
 }
 

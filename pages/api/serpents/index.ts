@@ -6,13 +6,15 @@ import { Filter, UpdateFilter } from 'mongodb';
 
 export async function getAllSerpents() {
   const { serpentDb: db } = await connectToDatabase();
-  const serpents = await db.collection(SERPENTS_COLLECTION).find({}).toArray();
+  const cursor = db.collection(SERPENTS_COLLECTION).find<Serpent>({});
+  const serpents = await cursor.toArray();
+  cursor.close();
   return serpents;
 }
 
 export async function getSerpent(mint: string) {
   const { serpentDb: db } = await connectToDatabase();
-  return await db.collection(SERPENTS_COLLECTION).findOne({ mint });
+  return await db.collection(SERPENTS_COLLECTION).findOne<Serpent>({ mint });
 }
 
 export async function updateSerpent(

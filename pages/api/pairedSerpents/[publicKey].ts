@@ -14,7 +14,7 @@ export async function getAllPairedSerpents() {
 
 export async function getPairedSerpent(mint: string) {
   const { serpentDb: db } = await connectToDatabase();
-  return await db.collection(PAIRS_COLLECTION).findOne({ mint });
+  return await db.collection(PAIRS_COLLECTION).findOne<PairedSerpent>({ mint });
 }
 
 export async function getPairedSerpents(staker: string) {
