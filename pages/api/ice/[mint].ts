@@ -1,10 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getDiamond } from '../diamonds';
 import { getSerpent } from '../serpents';
 
 export async function getIce(mint: string) {
   const serpent = await getSerpent(mint);
   if (!serpent) {
-    return 0;
+    // could be diamond mint, try getting diamond
+    const diamond = await getDiamond(mint);
+    return diamond !== null ? diamond.iceToCollect : 0;
   }
   const { lastStaked, icePerDay } = serpent;
   if (!lastStaked) {

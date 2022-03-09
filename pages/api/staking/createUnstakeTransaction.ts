@@ -12,14 +12,18 @@ import {
   ICE_TOKEN_MINT,
 } from '../../../src/config';
 import { getIce } from '../ice/[mint]';
-import { getTokenAccountsAndMintsFromWallet } from '../serpents/owned';
+import { getTokenAccountsAndMintsFromWallet as getSerpentTokenAccountsAndMintsFromWallet } from '../serpents/owned';
+import { getTokenAccountsAndMintsFromWallet as getDiamondTokenAccountsAndMintsFromWallet } from '../diamonds/owned';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<{
-    txMessage: Buffer;
-    daoSignature: Buffer;
-  } | null>
+  res: NextApiResponse<
+    | {
+        txMessage: Buffer;
+        daoSignature: Buffer;
+      }
+    | { error: string }
+  >
 ) {
   const { publicKey, mint, nftFromTokenAddress, nftToTokenAddress } = req.body;
   const user = new PublicKey(publicKey);
@@ -29,13 +33,25 @@ export default async function handler(
 
   try {
     // verify owner
-    const stakedMints = await getTokenAccountsAndMintsFromWallet(user, 0);
-    const { tokenAccount } = stakedMints.filter(
+    const stakedSerpentMints = await getSerpentTokenAccountsAndMintsFromWallet(
+      user,
+      0
+    );
+    let item = stakedSerpentMints.filter(
       (item: any) => item.tokenAccount === nftToTokenAddress
     )[0];
+
+    if (!item) {
+      const stakedDiamondMints =
+        await getDiamondTokenAccountsAndMintsFromWallet(user, 0);
+      item = stakedDiamondMints.filter(
+        (item: any) => item.tokenAccount === nftToTokenAddress
+      )[0];
+    }
+    const { tokenAccount } = item;
     if (tokenAccount !== nftToTokenAddress) {
       console.warn('could not verify owner');
-      res.status(403).json(null);
+      res.status(403).json({ error: 'wrong owner' });
     } else {
       const iceMint = new Token(
         CONNECTION,
@@ -113,11 +129,11 @@ export default async function handler(
       if (signature) {
         res.status(200).json({ txMessage, daoSignature: signature });
       } else {
-        res.status(500).json(null);
+        res.status(500).json({ error: 'no signature' });
       }
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json(null);
+    res.status(500).json({ error: 'exception' });
   }
 }
