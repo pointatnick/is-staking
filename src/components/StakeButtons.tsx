@@ -251,22 +251,22 @@ export default function StakeButtons(props: any) {
           )
         ).json();
 
-        // audit ice collection
-        const { userCanWithdraw, auditId } = await (
-          await fetch('/api/ice/audit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              publicKey: publicKey.toBase58(),
-              type: `unpair-${selectedPair.mint}-${selectedPair.diamondMint}`,
-              iceCollected: iceToCollect,
-            }),
-          })
-        ).json();
+        // // audit ice collection
+        // const { userCanWithdraw, auditId } = await (
+        //   await fetch('/api/ice/audit', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({
+        //       publicKey: publicKey.toBase58(),
+        //       type: `unpair-${selectedPair.mint}-${selectedPair.diamondMint}`,
+        //       iceCollected: iceToCollect,
+        //     }),
+        //   })
+        // ).json();
 
-        if (!userCanWithdraw) {
-          return;
-        }
+        // if (!userCanWithdraw) {
+        //   return;
+        // }
 
         try {
           if (iceToCollect) {
@@ -367,12 +367,12 @@ export default function StakeButtons(props: any) {
           }
         } catch (error) {
           console.log(error);
-          // delete most recent audit entry
-          await fetch('/api/ice/audit', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ auditId }),
-          });
+          // // delete most recent audit entry
+          // await fetch('/api/ice/audit', {
+          //   method: 'DELETE',
+          //   headers: { 'Content-Type': 'application/json' },
+          //   body: JSON.stringify({ auditId }),
+          // });
         } finally {
           setLoading(false);
         }
