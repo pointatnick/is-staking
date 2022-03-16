@@ -12,6 +12,14 @@ export async function getAllDiamonds() {
   return diamonds;
 }
 
+export async function getDiamonds(filter: Filter<Diamond>) {
+  const { diamondDb: db } = await connectToDatabase();
+  const cursor = db.collection(DIAMONDS_COLLECTION).find<Diamond>(filter);
+  const diamonds = await cursor.toArray();
+  cursor.close();
+  return diamonds;
+}
+
 export async function getDiamond(mint: string) {
   const { diamondDb: db } = await connectToDatabase();
   return await db.collection(DIAMONDS_COLLECTION).findOne<Diamond>({ mint });

@@ -14,6 +14,9 @@ import {
 import { getIce } from '../ice/[mint]';
 import { getTokenAccountsAndMintsFromWallet as getSerpentTokenAccountsAndMintsFromWallet } from '../serpents/owned';
 import { getTokenAccountsAndMintsFromWallet as getDiamondTokenAccountsAndMintsFromWallet } from '../diamonds/owned';
+import { getSerpentsFromWallet } from '../serpents/[publicKey]';
+import { getSerpents } from '../serpents';
+import { getDiamonds } from '../diamonds';
 
 export default async function handler(
   req: NextApiRequest,
@@ -32,26 +35,30 @@ export default async function handler(
   );
 
   try {
-    // verify owner
-    const stakedSerpentMints = await getSerpentTokenAccountsAndMintsFromWallet(
-      user,
-      0
-    );
-    let item = stakedSerpentMints.filter(
-      (item: any) => item.tokenAccount === nftToTokenAddress
-    )[0];
+    // // verify owner
+    // const stakedSerpentMints = await getSerpentTokenAccountsAndMintsFromWallet(
+    //   user,
+    //   0
+    // );
+    // let item = stakedSerpentMints.filter(
+    //   (item: any) => item.tokenAccount === nftToTokenAddress
+    // )[0];
 
-    if (!item) {
-      const stakedDiamondMints =
-        await getDiamondTokenAccountsAndMintsFromWallet(user, 0);
-      item = stakedDiamondMints.filter(
-        (item: any) => item.tokenAccount === nftToTokenAddress
-      )[0];
-    }
-    const { tokenAccount } = item;
-    if (tokenAccount !== nftToTokenAddress) {
-      console.warn('could not verify owner');
-      res.status(403).json({ error: 'wrong owner' });
+    // if (!item) {
+    //   const stakedDiamondMints =
+    //     await getDiamondTokenAccountsAndMintsFromWallet(user, 0);
+    //   item = stakedDiamondMints.filter(
+    //     (item: any) => item.tokenAccount === nftToTokenAddress
+    //   )[0];
+    // }
+
+    const stakedSerpents = await getSerpents({ staker: publicKey, mint });
+    if (stakedSerpents.length === 0) {
+      const stakedDiamonds = await getDiamonds({ staker: publicKey, mint });
+      if (stakedDiamonds.length === 0) {
+        console.warn(`no mint ${mint} belonging to staker ${publicKey}`);
+        res.status(403).json({ error: 'no mint for that staker' });
+      }
     } else {
       const iceMint = new Token(
         CONNECTION,

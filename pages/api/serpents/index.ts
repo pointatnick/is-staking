@@ -12,6 +12,14 @@ export async function getAllSerpents() {
   return serpents;
 }
 
+export async function getSerpents(filter: Filter<Serpent>) {
+  const { serpentDb: db } = await connectToDatabase();
+  const cursor = db.collection(SERPENTS_COLLECTION).find<Serpent>(filter);
+  const serpents = await cursor.toArray();
+  cursor.close();
+  return serpents;
+}
+
 export async function getSerpent(mint: string) {
   const { serpentDb: db } = await connectToDatabase();
   return await db.collection(SERPENTS_COLLECTION).findOne<Serpent>({ mint });
