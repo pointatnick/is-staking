@@ -53,12 +53,10 @@ export default async function handler(
     // }
 
     const stakedSerpents = await getSerpents({ staker: publicKey, mint });
-    if (stakedSerpents.length === 0) {
-      const stakedDiamonds = await getDiamonds({ staker: publicKey, mint });
-      if (stakedDiamonds.length === 0) {
-        console.warn(`no mint ${mint} belonging to staker ${publicKey}`);
-        res.status(403).json({ error: 'no mint for that staker' });
-      }
+    const stakedDiamonds = await getDiamonds({ staker: publicKey, mint });
+    if (stakedSerpents.length === 0 && stakedDiamonds.length === 0) {
+      console.warn(`no mint ${mint} belonging to staker ${publicKey}`);
+      res.status(403).json({ error: 'no mint for that staker' });
     } else {
       const iceMint = new Token(
         CONNECTION,
