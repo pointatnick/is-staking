@@ -9,7 +9,7 @@ export type Nft = {
   rank: number;
   staker: string;
   tokenAccount: string;
-  lastStaked: Date | null;
+  lastStaked?: Date;
 };
 
 export type Diamond = Nft & {
@@ -19,7 +19,7 @@ export type Diamond = Nft & {
 
 export type Serpent = Nft & {
   isStaked: boolean;
-  lastPaired: Date | null;
+  lastPaired?: Date;
   icePerDay: number;
 };
 
@@ -30,7 +30,7 @@ export type Serpent = Nft & {
  * plus PairedSerpent.lastPaired until now at pair rate
  */
 export type PairedSerpent = Nft & {
-  lastPaired: Date | null;
+  lastPaired?: Date;
   diamondMint: string;
   diamondRank: number;
   diamondImageUrl: string;
