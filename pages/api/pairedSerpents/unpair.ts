@@ -22,7 +22,7 @@ export async function unpairNfts(pairedSerpent: PairedSerpent) {
   );
   await updateSerpent(
     { mint: pairedSerpent.mint },
-    { $set: { isPaired: false, lastPaired: null, lastStaked: new Date() } }
+    { $set: { isPaired: false, lastPaired: undefined, lastStaked: new Date() } }
   );
 }
 
