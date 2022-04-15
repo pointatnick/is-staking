@@ -27,8 +27,8 @@ if (!diamondDbName) {
 }
 
 export async function connectToDatabase() {
-  console.log('requested');
   if (cachedClient && cachedSerpentDb && cachedDiamondDb) {
+    console.log('db: returning cache');
     return {
       client: cachedClient,
       serpentDb: cachedSerpentDb,
@@ -51,6 +51,7 @@ export async function connectToDatabase() {
   cachedSerpentDb = client.db(serpentDbName);
   cachedDiamondDb = client.db(diamondDbName);
 
+  console.log('db: returning new mongo client');
   return {
     client: cachedClient,
     serpentDb: cachedSerpentDb,

@@ -12,9 +12,6 @@ import {
   ICE_TOKEN_MINT,
 } from '../../../src/config';
 import { getIce } from '../ice/[mint]';
-import { getTokenAccountsAndMintsFromWallet as getSerpentTokenAccountsAndMintsFromWallet } from '../serpents/owned';
-import { getTokenAccountsAndMintsFromWallet as getDiamondTokenAccountsAndMintsFromWallet } from '../diamonds/owned';
-import { getSerpentsFromWallet } from '../serpents/[publicKey]';
 import { getSerpents } from '../serpents';
 import { getDiamonds } from '../diamonds';
 

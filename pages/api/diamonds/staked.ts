@@ -6,7 +6,6 @@ import {
   DIAMONDS_COLLECTION,
 } from '../../../src/config';
 import { getTokenAccountsAndMintsFromWallet } from './owned';
-import { getDiamondsFromWallet } from './[publicKey]';
 import { connectToDatabase } from '../../../lib/mongodb';
 import { Diamond } from '../types';
 
@@ -65,7 +64,9 @@ export async function getStakedDiamondMintsForPublicKey(publicKey: string) {
   const user = new PublicKey(publicKey);
 
   // get all diamonds in DAO
-  const daoMints = await getDiamondsFromWallet(DAO_PUBLIC_KEY);
+  const daoMints = (await getAllStakedDiamonds()).map(
+    (diamond) => diamond.mint
+  );
 
   // get all diamonds wallet used to have
   const oldDiamondMints = await getTokenAccountsAndMintsFromWallet(user, 0);

@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PublicKey } from '@solana/web3.js';
-import { DAO_PUBLIC_KEY, SERPENTS_COLLECTION } from '../../../src/config';
+import { SERPENTS_COLLECTION } from '../../../src/config';
 import { getTokenAccountsAndMintsFromWallet } from './owned';
-import { getSerpentsFromWallet } from './[publicKey]';
 import { connectToDatabase } from '../../../lib/mongodb';
 import { Serpent } from '../types';
 import { getChainSerpents } from '../ice/serpents/[publicKey]';
@@ -14,7 +13,9 @@ type Data = {
 export async function getStakedSerpentMintsForPublicKey(publicKey: string) {
   const user = new PublicKey(publicKey);
   // get all serpents in DAO
-  const daoMints = await getSerpentsFromWallet(DAO_PUBLIC_KEY);
+  const daoMints = (await getAllStakedSerpents()).map(
+    (serpent) => serpent.mint
+  );
 
   // get all serpents wallet used to have
   const oldSerpentMints = await getTokenAccountsAndMintsFromWallet(user, 0);

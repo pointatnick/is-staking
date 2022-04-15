@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PublicKey } from '@solana/web3.js';
 import { CONNECTION, METAPLEX_TOKEN_PROGRAM_ID } from '../../../src/config';
+import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
 import { getMintAddresses } from '../data/serpentMintAddresses';
 
 export async function getSerpentsFromWallet(publicKey: PublicKey, present = 1) {
@@ -13,6 +14,9 @@ export async function getSerpentsFromWallet(publicKey: PublicKey, present = 1) {
       'confirmed'
     )
   ).value;
+
+  const nftMetadatas = await Metadata.findDataByOwner(CONNECTION, publicKey);
+  console.log(nftMetadatas);
 
   return (
     tokenAccounts
