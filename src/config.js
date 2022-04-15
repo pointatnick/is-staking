@@ -12,7 +12,7 @@ const config = {
   },
   'mainnet-beta': {
     rpcUrl:
-      'https://.solana-mainnet.quiknode.pro/46b6a945d633bab9cac87a2f4771e395448811ad/',
+      'https://summer-wispy-frost.solana-mainnet.quiknode.pro/46b6a945d633bab9cac87a2f4771e395448811ad/',
     iceTokenMintPublicKey: 'icex2Fy2KtXjfiAAUEHLPHu7XKDLvwiyVUPP9PNpSkF',
     serpentsCollection: 'Serpents',
     diamondsCollection: 'diamonds',
