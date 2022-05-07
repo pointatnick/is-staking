@@ -6,8 +6,7 @@ import {
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { Message, PublicKey, Transaction } from '@solana/web3.js';
-import bs58 from 'bs58';
+import { PublicKey, Transaction } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
 import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
 import store from '../store/store';

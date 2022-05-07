@@ -1,11 +1,11 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useEffect, useState } from 'react';
 import { Serpent } from '../../pages/api/types';
 import NftImage from './NftImage';
-import SerpentDetails from './SerpentDetails';
-import store, { UiSerpent } from '../store/store';
+import { SerpentDetails, MoltingSerpentDetails } from './SerpentDetails';
+import store from '../store/store';
+import LockSharpIcon from '@mui/icons-material/LockSharp';
 
 type Props = {
   serpents: Serpent[];
@@ -39,7 +39,7 @@ const SerpentsGroup = function ({ serpents }: Props) {
     );
   }, [serpents]);
 
-  const toggleSerpent = function (serpent: UiSerpent) {
+  const toggleSerpent = function (serpent: Serpent) {
     store.setState({ pair: null });
     if (serpent.mint === selectedSerpent?.mint) {
       store.setState({ serpent: null });
@@ -52,7 +52,7 @@ const SerpentsGroup = function ({ serpents }: Props) {
     .sort((a, b) => {
       return a.icePerDay < b.icePerDay ? 1 : -1;
     })
-    .map((serpent: UiSerpent) => (
+    .map((serpent: Serpent) => (
       <Box
         key={serpent.mint}
         onClick={() => toggleSerpent(serpent)}
@@ -74,27 +74,62 @@ const SerpentsGroup = function ({ serpents }: Props) {
     .sort((a, b) => {
       return a.icePerDay < b.icePerDay ? 1 : -1;
     })
-    .map((serpent: UiSerpent) => (
-      <Box
-        key={serpent.mint}
-        onClick={() => toggleSerpent(serpent)}
-        sx={{
-          backgroundColor:
-            serpent.mint === selectedSerpent?.mint ? 'gold' : 'secondary.main',
-          color: 'secondary.dark',
-          display: 'flex',
-          flexDirection: 'column',
-          height: '156.77px',
-        }}
-      >
-        <NftImage image={serpent.imageUrl} />
-        <SerpentDetails
-          name={serpent.name}
-          rank={serpent.rank}
-          staked={serpent.isStaked}
-        />
-      </Box>
-    ));
+    .map((serpent: Serpent) => {
+      if (serpent.isMolting) {
+        return (
+          <Box
+            key={serpent.mint}
+            sx={{
+              backgroundColor: 'secondary.main',
+              color: 'secondary.dark',
+              display: 'flex',
+              flexDirection: 'column',
+              height: '156.77px',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'block',
+                height: '106px',
+                width: '106px',
+              }}
+            >
+              <LockSharpIcon
+                sx={{
+                  height: '100px',
+                  width: '100px',
+                }}
+              />
+            </Box>
+            <MoltingSerpentDetails serpent={serpent} />
+          </Box>
+        );
+      }
+
+      return (
+        <Box
+          key={serpent.mint}
+          onClick={() => toggleSerpent(serpent)}
+          sx={{
+            backgroundColor:
+              serpent.mint === selectedSerpent?.mint
+                ? 'gold'
+                : 'secondary.main',
+            color: 'secondary.dark',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '156.77px',
+          }}
+        >
+          <NftImage image={serpent.imageUrl} />
+          <SerpentDetails
+            name={serpent.name}
+            rank={serpent.rank}
+            staked={serpent.isStaked}
+          />
+        </Box>
+      );
+    });
 
   return (
     <Box

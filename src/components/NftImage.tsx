@@ -3,26 +3,30 @@ import Skeleton from '@mui/material/Skeleton';
 import Image from 'next/image';
 import Box from '@mui/material/Box';
 
-const NftImage = function (props: any) {
+type Props = {
+  image: string;
+};
+
+const NftImage = function ({ image }: Props) {
   const [loading, setLoading] = useState(true);
-  const [image, setImage] = useState('');
+  const [imageBuffer, setImageBuffer] = useState('');
 
   // load the image
   useEffect(() => {
     (async () => {
       try {
-        const blob = await (await fetch(props.image)).blob();
+        const blob = await (await fetch(image)).blob();
         let reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onload = () => {
-          setImage(reader.result as string);
+          setImageBuffer(reader.result as string);
           setLoading(false);
         };
       } catch (error) {
         console.error('failed to fetch image');
       }
     })();
-  }, [props.image]);
+  }, [image]);
 
   return (
     <Box
@@ -43,7 +47,7 @@ const NftImage = function (props: any) {
           }}
         ></Skeleton>
       ) : (
-        <Image src={image} alt="serpent" width="100" height="100" />
+        <Image src={imageBuffer} alt="serpent" width="100" height="100" />
       )}
     </Box>
   );

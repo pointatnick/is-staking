@@ -1,12 +1,11 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useEffect, useState } from 'react';
 import { PairedSerpent } from '../../pages/api/types';
 import store from '../store/store';
-import DiamondDetails from './DiamondDetails';
+import { PairedDiamondDetails } from './DiamondDetails';
 import NftImage from './NftImage';
-import SerpentDetails from './SerpentDetails';
+import { SerpentDetails } from './SerpentDetails';
 
 type Props = {
   pairedSerpents: PairedSerpent[];
@@ -73,7 +72,10 @@ const PairsGroup = function ({ pairedSerpents }: Props) {
           }}
         >
           <NftImage image={pair.diamondImageUrl} />
-          <DiamondDetails name={pair.diamondName} rank={pair.diamondRank} />
+          <PairedDiamondDetails
+            name={pair.diamondName}
+            rank={pair.diamondRank}
+          />
         </Box>
       </Box>
     ));

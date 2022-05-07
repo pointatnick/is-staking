@@ -14,23 +14,13 @@ import { Diamond, PairedSerpent, Serpent } from '../../pages/api/types';
 // // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 // export type AppDispatch = typeof store.dispatch;
 
-export type UiNft = {
-  mint: string;
-  name: string;
-  isStaked: boolean;
-  rank: number;
-  imageUrl: string;
-};
-export type UiDiamond = UiNft & {};
-export type UiSerpent = UiNft & {};
-
 class Store {
   state: {
     diamonds?: Diamond[];
     serpents?: Serpent[];
     pairedSerpents?: PairedSerpent[];
-    diamond: UiDiamond | null;
-    serpent: UiSerpent | null;
+    diamond: Diamond | null;
+    serpent: Serpent | null;
     pair: any;
   } = {
     diamond: null,
