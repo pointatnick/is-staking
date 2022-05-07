@@ -7,6 +7,7 @@ import {
 } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Message, PublicKey, Transaction } from '@solana/web3.js';
+import bs58 from 'bs58';
 import { useCallback, useEffect, useState } from 'react';
 import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
 import store from '../store/store';
@@ -16,7 +17,7 @@ export default function StakeButtons(props: any) {
   const [selectedDiamond, setSelectedDiamond] = useState<any>({});
   const [selectedPair, setSelectedPair] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const { publicKey, signTransaction, wallet } = useWallet();
+  const { publicKey, signTransaction, wallet, sendTransaction } = useWallet();
   const { connection } = useConnection();
 
   // set store data
@@ -48,6 +49,12 @@ export default function StakeButtons(props: any) {
 
         try {
           const instructions = [];
+          const fromTokenAddress = await Token.getAssociatedTokenAddress(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            mint,
+            publicKey
+          );
           const toTokenAddress = await Token.getAssociatedTokenAddress(
             ASSOCIATED_TOKEN_PROGRAM_ID,
             TOKEN_PROGRAM_ID,
@@ -75,7 +82,7 @@ export default function StakeButtons(props: any) {
           instructions.push(
             Token.createTransferInstruction(
               TOKEN_PROGRAM_ID,
-              new PublicKey(selectedNft.tokenAccount),
+              fromTokenAddress,
               toTokenAddress,
               publicKey,
               [],
@@ -102,7 +109,7 @@ export default function StakeButtons(props: any) {
               method: 'post',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                publicKey: publicKey.toBase58(),
+                staker: publicKey.toBase58(),
                 signature,
                 txMessage,
                 mint: selectedNft.mint,
@@ -148,6 +155,33 @@ export default function StakeButtons(props: any) {
 
         const nftFromTokenAccount =
           await mintToken.getOrCreateAssociatedAccountInfo(DAO_PUBLIC_KEY);
+        let ata: PublicKey;
+        try {
+          ata = (
+            await connection.getParsedTokenAccountsByOwner(publicKey, {
+              mint: new PublicKey(selectedNft.mint),
+            })
+          ).value[0].pubkey;
+        } catch (error) {
+          console.error('token account does not exist, creating one');
+          ata = await Token.getAssociatedTokenAddress(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            ICE_TOKEN_MINT,
+            publicKey
+          );
+          const newAtaTx = new Transaction().add(
+            Token.createAssociatedTokenAccountInstruction(
+              ASSOCIATED_TOKEN_PROGRAM_ID,
+              TOKEN_PROGRAM_ID,
+              ICE_TOKEN_MINT,
+              ata,
+              publicKey,
+              publicKey
+            )
+          );
+          await sendTransaction(newAtaTx, connection);
+        }
 
         const response = await (
           await fetch('/api/staking/createUnstakeTransaction', {
@@ -157,7 +191,7 @@ export default function StakeButtons(props: any) {
               publicKey: publicKey.toBase58(),
               mint: selectedNft.mint,
               nftFromTokenAddress: nftFromTokenAccount.address.toString(),
-              nftToTokenAddress: selectedNft.tokenAccount,
+              nftToTokenAddress: ata.toBase58(),
             }),
           })
         ).json();
@@ -165,8 +199,7 @@ export default function StakeButtons(props: any) {
         const { txMessage, daoSignature } = response;
 
         // slap signature back on
-        const transaction = Transaction.populate(Message.from(txMessage.data));
-        transaction.addSignature(DAO_PUBLIC_KEY, daoSignature.data);
+        const transaction = Transaction.from(txMessage.data);
 
         try {
           // prompt wallet to sign
@@ -186,7 +219,6 @@ export default function StakeButtons(props: any) {
               body: JSON.stringify({
                 txMessage,
                 signature,
-                publicKey: publicKey.toBase58(),
                 mint: selectedNft.mint,
               }),
             })
@@ -250,23 +282,6 @@ export default function StakeButtons(props: any) {
             }`
           )
         ).json();
-
-        // // audit ice collection
-        // const { userCanWithdraw, auditId } = await (
-        //   await fetch('/api/ice/audit', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({
-        //       publicKey: publicKey.toBase58(),
-        //       type: `unpair-${selectedPair.mint}-${selectedPair.diamondMint}`,
-        //       iceCollected: iceToCollect,
-        //     }),
-        //   })
-        // ).json();
-
-        // if (!userCanWithdraw) {
-        //   return;
-        // }
 
         try {
           if (iceToCollect) {
@@ -345,7 +360,6 @@ export default function StakeButtons(props: any) {
                 body: JSON.stringify({
                   txMessage,
                   signature,
-                  publicKey: publicKey.toBase58(),
                 }),
               })
             ).json();
@@ -367,12 +381,6 @@ export default function StakeButtons(props: any) {
           }
         } catch (error) {
           console.log(error);
-          // // delete most recent audit entry
-          // await fetch('/api/ice/audit', {
-          //   method: 'DELETE',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify({ auditId }),
-          // });
         } finally {
           setLoading(false);
         }

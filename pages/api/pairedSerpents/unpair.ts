@@ -1,8 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getPairedSerpent, updatePairedSerpent } from './[publicKey]';
-import { getSerpent, updateSerpent } from '../serpents';
-import { updateDiamond } from '../diamonds';
+import { getPairedSerpent } from './[publicKey]';
+import { getSerpent } from '../serpents';
 import { PairedSerpent } from '../types';
+import {
+  clientPromise,
+  runTransactionWithRetry,
+  unpairSerpent,
+} from '../../../lib/mongodbv2';
 
 type Data = {
   success: boolean;
@@ -11,18 +15,12 @@ type Data = {
 };
 
 export async function unpairNfts(pairedSerpent: PairedSerpent) {
-  await updatePairedSerpent(
-    { mint: pairedSerpent.mint },
-    { $set: { isPaired: false, iceToCollect: 0 } },
-    { upsert: false }
-  );
-  await updateDiamond(
-    { mint: pairedSerpent.diamondMint },
-    { $set: { isPaired: false } }
-  );
-  await updateSerpent(
-    { mint: pairedSerpent.mint },
-    { $set: { isPaired: false, lastPaired: undefined, lastStaked: new Date() } }
+  const mongoClient = await clientPromise;
+  await runTransactionWithRetry(
+    unpairSerpent,
+    mongoClient,
+    mongoClient.startSession(),
+    [pairedSerpent]
   );
 }
 
@@ -53,19 +51,21 @@ export default async function handler(
             let serpentIce = icePerSecond * seconds;
             let iceToCollect = pairedSerpent.iceToCollect + serpentIce;
 
-            res.status(200).json({ success: true, iceToCollect });
+            return res.status(200).json({ success: true, iceToCollect });
           } else {
-            res.status(400).json({ success: false, errorCode: 3400 });
+            return res.status(400).json({ success: false, errorCode: 3400 });
           }
         } else {
-          res.status(400).json({ success: false, errorCode: 3400 });
+          return res.status(400).json({ success: false, errorCode: 3400 });
         }
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ success: false, errorCode: 3500 });
+      return res.status(500).json({ success: false, errorCode: 3500 });
     }
-  } else if (req.method === 'POST') {
+  }
+
+  if (req.method === 'POST') {
     const { publicKey, pairedSerpentMint } = req.body;
     try {
       // get data from db
@@ -74,16 +74,16 @@ export default async function handler(
         const userOwnsPair = pairedSerpent.staker === publicKey;
         if (userOwnsPair && pairedSerpent.isPaired) {
           await unpairNfts(pairedSerpent);
-          res.status(200).json({ success: true });
+          return res.status(200).json({ success: true });
         } else {
-          res.status(400).json({ success: false, errorCode: 3400 });
+          return res.status(400).json({ success: false, errorCode: 3400 });
         }
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ success: false, errorCode: 3500 });
+      return res.status(500).json({ success: false, errorCode: 3500 });
     }
-  } else {
-    res.status(405).json({ success: false, errorCode: 3405 });
   }
+
+  return res.status(404).json({ success: false, errorCode: 3405 });
 }

@@ -1,8 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { updatePairedSerpent } from './[publicKey]';
-import { getSerpent, updateSerpent } from '../serpents';
-import { getDiamond, updateDiamond } from '../diamonds';
+import { getSerpent } from '../serpents';
+import { getDiamond } from '../diamonds';
 import { Diamond, Serpent } from '../types';
+import {
+  clientPromise,
+  pairSerpent,
+  runTransactionWithRetry,
+} from '../../../lib/mongodbv2';
 
 type Data = {
   success: boolean;
@@ -12,29 +16,12 @@ type Data = {
 export async function pairNfts(diamond: Diamond, serpent: Serpent) {
   // continue if user owns staked serpent and staked diamond
   // extract unnecessary data from pairedSerpent
-  const { isStaked, lastStaked, icePerDay, ...pairedSerpent } = serpent;
-  const lastPaired = new Date();
-  // pair the serpent and diamond
-  await updatePairedSerpent(
-    { mint: serpent.mint },
-    {
-      $set: {
-        ...pairedSerpent,
-        isPaired: true,
-        lastPaired,
-        diamondMint: diamond.mint,
-        diamondRank: diamond.rank,
-        diamondImageUrl: diamond.imageUrl,
-        diamondName: diamond.name,
-        iceToCollect: 0,
-      },
-    },
-    { upsert: true }
-  );
-  await updateDiamond({ mint: diamond.mint }, { $set: { isPaired: true } });
-  await updateSerpent(
-    { mint: serpent.mint },
-    { $set: { isPaired: true, lastPaired } }
+  const mongoClient = await clientPromise;
+  await runTransactionWithRetry(
+    pairSerpent,
+    mongoClient,
+    mongoClient.startSession(),
+    [serpent, diamond]
   );
 }
 
@@ -62,16 +49,16 @@ export default async function handler(
           !pairExists
         ) {
           await pairNfts(diamond, serpent);
-          res.status(200).json({ success: true });
+          return res.status(200).json({ success: true });
         } else {
-          res.status(400).json({ success: false, errorCode: 3400 });
+          return res.status(400).json({ success: false, errorCode: 3400 });
         }
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ success: false, errorCode: 3500 });
+      return res.status(500).json({ success: false, errorCode: 3500 });
     }
-  } else {
-    res.status(405).json({ success: false, errorCode: 3405 });
   }
+
+  return res.status(405).json({ success: false, errorCode: 3405 });
 }

@@ -1,4 +1,3 @@
-import { config as metaplexConfig } from '@metaplex-foundation/mpl-core';
 import { PublicKey, Connection } from '@solana/web3.js';
 
 const config = {
@@ -14,7 +13,9 @@ const config = {
     rpcUrl:
       'https://summer-wispy-frost.solana-mainnet.quiknode.pro/46b6a945d633bab9cac87a2f4771e395448811ad/',
     iceTokenMintPublicKey: 'icex2Fy2KtXjfiAAUEHLPHu7XKDLvwiyVUPP9PNpSkF',
+    serpentsDb: 'InfinitySerpents',
     serpentsCollection: 'Serpents',
+    diamondsDb: 'fancy_diamonds',
     diamondsCollection: 'diamonds',
     pairsCollection: 'paired_serpents',
   },
@@ -30,10 +31,15 @@ export const ICE_TOKEN_MINT = new PublicKey(
 export const DAO_PUBLIC_KEY = new PublicKey(
   'f6gjSSzNYV44aLs5ocmY19XtbovELJAf6w5DTLEjdBL'
 );
+export const DAO_ICE_TOKEN_ACCOUNT = new PublicKey(
+  '7bYLu5xNTsz1MaXnN4b3AzV5xYH7T2mDLGfzE6tChPFG'
+);
 export const METAPLEX_TOKEN_PROGRAM_ID = new PublicKey(
-  metaplexConfig.programs.token
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 );
 export const S3_KEY = config[process.env.SOLANA_NETWORK].s3RarityFile;
+export const SERPENTS_DB = config[process.env.SOLANA_NETWORK].serpentsDb;
+export const DIAMONDS_DB = config[process.env.SOLANA_NETWORK].diamondsDb;
 export const SERPENTS_COLLECTION =
   config[process.env.SOLANA_NETWORK].serpentsCollection;
 export const PAIRS_COLLECTION =

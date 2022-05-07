@@ -1,5 +1,7 @@
 // import { configureStore } from '@reduxjs/toolkit';
 
+import { Diamond, PairedSerpent, Serpent } from '../../pages/api/types';
+
 // const store = configureStore({
 //   reducer: {
 //     selectedSerpent: selectedSerpentReducer,
@@ -24,6 +26,9 @@ export type UiSerpent = UiNft & {};
 
 class Store {
   state: {
+    diamonds?: Diamond[];
+    serpents?: Serpent[];
+    pairedSerpents?: PairedSerpent[];
     diamond: UiDiamond | null;
     serpent: UiSerpent | null;
     pair: any;

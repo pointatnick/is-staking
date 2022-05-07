@@ -3,64 +3,41 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
+import { Token } from '@solana/spl-token';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  Token,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Transaction } from '@solana/web3.js';
-import { useCallback, useEffect, useState } from 'react';
-import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
+import { useCallback, useState } from 'react';
+import {
+  DAO_ICE_TOKEN_ACCOUNT,
+  DAO_PUBLIC_KEY,
+  ICE_TOKEN_MINT,
+} from '../config';
 import LoadingProgress from './LoadingProgress';
 
-export default function IceCounter(props: any) {
-  const { serpents, diamonds } = props;
-  const [totalIce, setTotalIce] = useState(0);
+type Props = {
+  ice: number;
+};
+
+export default function IceCounter({ ice }: Props) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState(0);
-  const { publicKey, signTransaction, wallet } = useWallet();
+  const { publicKey, signTransaction, wallet, sendTransaction } = useWallet();
   const { connection } = useConnection();
-
-  const getPairedIce = async (publicKey: string) => {
-    const result = await (
-      await fetch(`/api/ice/pairedSerpents/${publicKey}`)
-    ).json();
-
-    return result;
-  };
-
-  const getDiamondsIce = async (publicKey: string) => {
-    const result = await (await fetch(`/api/ice/diamonds/${publicKey}`)).json();
-
-    return result;
-  };
-
-  const getSerpentsIce = async (publicKey: string) => {
-    const result = await (await fetch(`/api/ice/serpents/${publicKey}`)).json();
-
-    return result;
-  };
-
-  useEffect(() => {
-    (async () => {
-      if (publicKey) {
-        let { ice: pairedIce } = await getPairedIce(publicKey.toBase58());
-        let { ice: diamondsIce } = await getDiamondsIce(publicKey.toBase58());
-        let { ice: serpentsIce } = await getSerpentsIce(publicKey.toBase58());
-        setTotalIce(pairedIce + diamondsIce + serpentsIce);
-      }
-    })();
-  }, [serpents, diamonds, publicKey]);
 
   const onClaim = useCallback(async () => {
     setLoading(true);
     if (publicKey) {
-      let { ice: pairedIce } = await getPairedIce(publicKey.toBase58());
-      let { ice: diamondsIce } = await getDiamondsIce(publicKey.toBase58());
-      let { ice: serpentsIce } = await getSerpentsIce(publicKey.toBase58());
-      let iceToWithdraw = pairedIce + diamondsIce + serpentsIce;
+      let { ice: iceToWithdraw } = await (
+        await fetch(`/api/users/${publicKey}`)
+      ).json();
+
+      // cut down iceToWithdraw to 9 decimals
+      iceToWithdraw = +iceToWithdraw.toFixed(9);
 
       // audit ice collection
       const { userCanWithdraw, auditId, remainingTime } = await (
@@ -90,7 +67,6 @@ export default function IceCounter(props: any) {
           //@ts-ignore
           wallet
         );
-
         // create associated token accounts for my token if they don't exist yet
         // owner might never have had ICE before
         const fromTokenAccount =
@@ -101,9 +77,7 @@ export default function IceCounter(props: any) {
           ICE_TOKEN_MINT,
           publicKey
         );
-
         const toTokenAccount = await connection.getAccountInfo(toTokenAddress);
-
         const instructions = [];
         if (toTokenAccount === null) {
           // if destination associated token account doesn't exist, make one
@@ -118,7 +92,6 @@ export default function IceCounter(props: any) {
             )
           );
         }
-
         instructions.push(
           Token.createTransferCheckedInstruction(
             TOKEN_PROGRAM_ID,
@@ -131,7 +104,6 @@ export default function IceCounter(props: any) {
             9
           )
         );
-
         // create and sign transaction, serialize and send for user to sign
         const transaction = new Transaction().add(...instructions);
         // requires user to sign
@@ -139,14 +111,12 @@ export default function IceCounter(props: any) {
         transaction.recentBlockhash = (
           await connection.getRecentBlockhash()
         ).blockhash;
-
         //@ts-ignore
         const tx = await signTransaction(transaction);
         const txMessage = tx.serializeMessage();
         const signature = tx.signatures.filter(
           (s) => s.publicKey.toBase58() === publicKey.toBase58()
         )[0].signature;
-
         // claim ICE
         // TODO: reflect this somewhere
         const { error: claimError } = await (
@@ -156,15 +126,12 @@ export default function IceCounter(props: any) {
             body: JSON.stringify({
               txMessage,
               signature,
-              publicKey: publicKey.toBase58(),
             }),
           })
         ).json();
-
         if (claimError) {
           throw new Error('claim error');
         }
-
         // zero out ICE
         await fetch('/api/ice/withdraw', {
           method: 'POST',
@@ -173,11 +140,10 @@ export default function IceCounter(props: any) {
             publicKey: publicKey.toBase58(),
           }),
         });
-
         location.reload();
       } catch (error) {
         console.log(error);
-        // delete most recent audit entry
+        // delete most recent audit entry, otherwise failed attempts will prevent a user from claiming for whole day
         await fetch('/api/ice/audit', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
@@ -195,7 +161,7 @@ export default function IceCounter(props: any) {
         sx={{ color: 'white', fontFamily: 'Metamorphous' }}
         variant="h3"
       >
-        {totalIce.toLocaleString()} $ICE
+        {ice.toLocaleString()} $ICE
       </Typography>
       <Box
         sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}

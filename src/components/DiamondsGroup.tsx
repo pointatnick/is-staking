@@ -7,15 +7,15 @@ import NftImage from './NftImage';
 import store, { UiDiamond } from '../store/store';
 import { Typography } from '@mui/material';
 
-const DiamondsGroup = function (props: any) {
+type Props = {
+  diamonds: Diamond[];
+};
+
+const DiamondsGroup = function ({ diamonds }: Props) {
+  const [unstakedDiamonds, setUnstakedDiamonds] = useState<Diamond[]>([]);
+  const [stakedDiamonds, setStakedDiamonds] = useState<Diamond[]>([]);
   // todo: write type
-  const [diamonds, setDiamonds] = useState<any[]>([]);
-  // todo: write type
-  const [stakedDiamonds, setStakedDiamonds] = useState<any[]>([]);
   const [selectedDiamond, setSelectedDiamond] = useState<any>({});
-  const [loading, setLoading] = useState(true);
-  const { connection } = useConnection();
-  const { publicKey, wallet } = useWallet();
 
   // set selected diamond
   useEffect(() => {
@@ -31,46 +31,12 @@ const DiamondsGroup = function (props: any) {
     };
   }, [selectedDiamond, setSelectedDiamond]);
 
-  // get diamonds
   useEffect(() => {
-    if (publicKey) {
-      (async () => {
-        setLoading(true);
-
-        const { diamonds: allDiamonds } = await (
-          await fetch(`/api/diamonds`)
-        ).json();
-        const mints = allDiamonds.map((item: Diamond) => item.mint);
-
-        const { diamondMints } = await (
-          await fetch(`/api/diamonds/owned?publicKey=${publicKey.toString()}`)
-        ).json();
-
-        // get serpents from user
-        setDiamonds(
-          diamondMints.map((item: any) => {
-            // for getting metadata from allSerpents
-            const index = mints.indexOf(item.mint);
-            const { rank, name, imageUrl } = allDiamonds[index];
-
-            return {
-              ...item,
-              rank,
-              name,
-              imageUrl,
-            };
-          })
-        );
-
-        const { stakedDiamonds: allStakedDiamonds } = await (
-          await fetch(`/api/diamonds/staked?publicKey=${publicKey.toString()}`)
-        ).json();
-
-        setStakedDiamonds(allStakedDiamonds);
-        setLoading(false);
-      })();
-    }
-  }, [publicKey, connection, wallet]);
+    setUnstakedDiamonds(diamonds.filter((diamond) => !diamond.isStaked));
+    setStakedDiamonds(
+      diamonds.filter((diamond) => diamond.isStaked && !diamond.isPaired)
+    );
+  }, [diamonds]);
 
   const toggleDiamond = function (diamond: UiDiamond) {
     store.setState({ pair: null });
@@ -81,7 +47,7 @@ const DiamondsGroup = function (props: any) {
     }
   };
 
-  const sortedDiamonds = diamonds
+  const sortedDiamonds = unstakedDiamonds
     .sort((a, b) => {
       return a.rank > b.rank ? 1 : -1;
     })
@@ -146,21 +112,19 @@ const DiamondsGroup = function (props: any) {
       >
         DIAMONDS
       </Typography>
-      {loading ? null : (
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px',
-            // background: '#00000055',
-            padding: '8px',
-            justifyContent: 'center',
-          }}
-        >
-          {sortedStakedDiamonds}
-          {sortedDiamonds}
-        </Box>
-      )}
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+          // background: '#00000055',
+          padding: '8px',
+          justifyContent: 'center',
+        }}
+      >
+        {sortedStakedDiamonds}
+        {sortedDiamonds}
+      </Box>
     </Box>
   );
 };

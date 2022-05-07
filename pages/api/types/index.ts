@@ -10,18 +10,32 @@ export type Nft = {
   staker: string;
   tokenAccount: string;
   lastStaked?: Date;
+  isMolting: boolean;
+  isStaked: boolean;
 };
 
 export type Diamond = Nft & {
-  isStaked: boolean;
   iceToCollect: number;
+  isUsedForTierOneMolt: boolean;
+  hasEnergy: boolean;
 };
 
 export type Serpent = Nft & {
-  isStaked: boolean;
   lastPaired?: Date;
   icePerDay: number;
 };
+
+// export enum MoltTier {
+//   Infinite = 'Infinite', // tier 1
+//   Empowered = 'Empowered', // tier 2
+//   Evolved = 'Evolved', // tier 3
+//   Base = 'Base', // tier 4
+// }
+
+// export enum EnergyCharged {
+//   Charged = 'yes',
+//   NotCharged = 'no',
+// }
 
 /**
  * all PairedSerpents are staked

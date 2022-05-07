@@ -2,18 +2,18 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useEffect, useState } from 'react';
+import { PairedSerpent } from '../../pages/api/types';
 import store from '../store/store';
 import DiamondDetails from './DiamondDetails';
 import NftImage from './NftImage';
 import SerpentDetails from './SerpentDetails';
 
-const PairsGroup = function (props: any) {
-  // todo: write type
-  const [pairedSerpents, setPairedSerpents] = useState<any[]>([]);
+type Props = {
+  pairedSerpents: PairedSerpent[];
+};
+
+const PairsGroup = function ({ pairedSerpents }: Props) {
   const [selectedPair, setSelectedPair] = useState<any>({});
-  const [loading, setLoading] = useState(true);
-  const { connection } = useConnection();
-  const { publicKey, wallet } = useWallet();
 
   // set selected serpent
   useEffect(() => {
@@ -29,25 +29,8 @@ const PairsGroup = function (props: any) {
     };
   }, [selectedPair, setSelectedPair]);
 
-  // get serpents
-  useEffect(() => {
-    if (publicKey) {
-      (async () => {
-        setLoading(true);
-
-        const { pairedSerpents: allPairs } = await (
-          await fetch(`/api/pairedSerpents/${publicKey.toBase58()}`)
-        ).json();
-
-        setPairedSerpents(allPairs);
-
-        setLoading(false);
-      })();
-    }
-  }, [publicKey, connection, wallet]);
-
-  // todo: type
-  const togglePair = function (pair: any) {
+  //  type
+  const togglePair = function (pair: PairedSerpent) {
     store.setState({ diamond: null, serpent: null });
     if (pair.mint === selectedPair?.mint) {
       store.setState({ pair: null });
@@ -108,20 +91,18 @@ const PairsGroup = function (props: any) {
       >
         PAIRS
       </Typography>
-      {loading ? null : (
-        <Box
-          sx={{
-            display: 'flex',
-            gap: '24px',
-            flexWrap: 'wrap',
-            // background: '#00000055',
-            padding: '8px',
-            justifyContent: 'center',
-          }}
-        >
-          {sortedPairs}
-        </Box>
-      )}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: '24px',
+          flexWrap: 'wrap',
+          // background: '#00000055',
+          padding: '8px',
+          justifyContent: 'center',
+        }}
+      >
+        {sortedPairs}
+      </Box>
     </Box>
   );
 };

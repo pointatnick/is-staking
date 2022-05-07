@@ -4,8 +4,15 @@ import Box from '@mui/material/Box';
 import SerpentsGroup from './SerpentsGroup';
 import DiamondsGroup from './DiamondsGroup';
 import PairsGroup from './PairsGroup';
+import { Diamond, PairedSerpent, Serpent } from '../../pages/api/types';
 
-export default function Staker() {
+type Props = {
+  serpents: Serpent[];
+  diamonds: Diamond[];
+  pairedSerpents: PairedSerpent[];
+};
+
+export default function Staker({ serpents, diamonds, pairedSerpents }: Props) {
   const { publicKey } = useWallet();
   return (
     <Box component="main" className={styles.main}>
@@ -16,9 +23,10 @@ export default function Staker() {
             flexDirection: 'column',
             gap: '64px',
             margin: ['0', '0 4em', '0 4em', '0 8em', '0 16em'],
+            paddingBottom: '40px',
           }}
         >
-          <PairsGroup />
+          <PairsGroup pairedSerpents={pairedSerpents} />
           <Box
             sx={{
               display: 'flex',
@@ -26,8 +34,8 @@ export default function Staker() {
               flexDirection: ['column', 'column', 'row', 'row', 'row'],
             }}
           >
-            <SerpentsGroup />
-            <DiamondsGroup />
+            <SerpentsGroup serpents={serpents} />
+            <DiamondsGroup diamonds={diamonds} />
           </Box>
         </Box>
       ) : (

@@ -1,17 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as bs58 from 'bs58';
-import { Message, Keypair, PublicKey, Transaction } from '@solana/web3.js';
+import { Message, Keypair, Transaction } from '@solana/web3.js';
 import { CONNECTION } from '../../../src/config';
-import { stakeOrUnstakeSerpent } from '../serpents';
 import nacl from 'tweetnacl';
-import { stakeOrUnstakeDiamond } from '../diamonds';
+import {
+  clientPromise,
+  runTransactionWithRetry,
+  unstakeSerpentOrDiamond,
+} from '../../../lib/mongodbv2';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<{ error: boolean }>
 ) {
-  const { txMessage, signature, publicKey, mint } = req.body;
-  const user = new PublicKey(publicKey);
+  const { txMessage, signature, mint } = req.body;
   const daoKeypair = Keypair.fromSecretKey(
     bs58.decode(process.env.DAO_PRIVATE_KEY!)
   );
@@ -19,17 +21,40 @@ export default async function handler(
     new Uint8Array(txMessage.data),
     daoKeypair.secretKey
   );
-  const transaction = Transaction.populate(Message.from(txMessage.data));
-  transaction.addSignature(user, signature.data);
-  transaction.addSignature(daoKeypair.publicKey, Buffer.from(daoSignature));
+  const transaction = Transaction.populate(Message.from(txMessage.data), [
+    bs58.encode(signature.data),
+    bs58.encode(daoSignature),
+  ]);
 
-  try {
-    await CONNECTION.sendRawTransaction(transaction.serialize());
-    await stakeOrUnstakeSerpent(mint, new Date(), false, null);
-    await stakeOrUnstakeDiamond(mint, new Date(), false, null);
-    res.status(200).json({ error: false });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: true });
+  let retries = 0;
+  let MAX_RETRIES = 3;
+
+  while (retries < MAX_RETRIES) {
+    try {
+      const txHash = await CONNECTION.sendRawTransaction(
+        transaction.serialize(),
+        { preflightCommitment: 'confirmed', skipPreflight: false }
+      );
+      const result = await CONNECTION.confirmTransaction(txHash);
+      if (result.value && result.value.err === null) {
+        console.log('transaction confirmed', result);
+        const mongoClient = await clientPromise;
+        await runTransactionWithRetry(
+          unstakeSerpentOrDiamond,
+          mongoClient,
+          mongoClient.startSession(),
+          [mint]
+        );
+
+        return res.status(200).json({ error: false });
+      }
+    } catch (error) {
+      console.error(error);
+      if (retries === MAX_RETRIES - 1) {
+        return res.status(500).json({ error: true });
+      }
+    } finally {
+      retries += 1;
+    }
   }
 }

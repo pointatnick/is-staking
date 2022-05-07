@@ -10,13 +10,9 @@ import {
   WalletProvider,
 } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import Staker from '../src/components/Staker';
 import { RPC_URL } from '../src/config';
-import { theme } from '../styles/theme';
-import Box from '@mui/material/Box';
-import { ThemeProvider } from '@mui/material';
-import HeroLayout from '../src/components/HeroLayout';
-import StakeButtons from '../src/components/StakeButtons';
+
+import MainPage from '../src/components/MainPage';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -43,20 +39,7 @@ export default function Home() {
             />
             <link rel="icon" href="/favicon.ico" />
           </Head>
-          <ThemeProvider theme={theme}>
-            <Box
-              sx={{
-                backgroundImage: "url('background.png')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
-              }}
-            >
-              <HeroLayout />
-              <Staker />
-            </Box>
-            <StakeButtons />
-          </ThemeProvider>
+          <MainPage />
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

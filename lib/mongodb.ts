@@ -1,8 +1,9 @@
 import { Db, MongoClient } from 'mongodb';
+import { DIAMONDS_DB, SERPENTS_DB } from '../src/config';
 
 let uri = process.env.MONGODB_URI!;
-let serpentDbName = process.env.SERPENTS_DB;
-let diamondDbName = process.env.DIAMONDS_DB;
+let serpentDbName = SERPENTS_DB;
+let diamondDbName = DIAMONDS_DB;
 
 let cachedClient: MongoClient | undefined;
 let cachedSerpentDb: Db | undefined;

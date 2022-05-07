@@ -6,6 +6,7 @@ import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { useCallback, useState } from 'react';
 import { DAO_PUBLIC_KEY } from '../config';
 import LoadingProgress from './LoadingProgress';
+import bs58 from 'bs58';
 
 export default function UnstakeButton(props: any) {
   const [loading, setLoading] = useState(false);
@@ -44,8 +45,9 @@ export default function UnstakeButton(props: any) {
       const { txMessage, daoSignature } = response;
 
       // slap signature back on
-      const transaction = Transaction.populate(Message.from(txMessage.data));
-      transaction.addSignature(DAO_PUBLIC_KEY, daoSignature.data);
+      const transaction = Transaction.populate(Message.from(txMessage.data), [
+        bs58.encode(daoSignature.data),
+      ]);
 
       try {
         // prompt wallet to sign
@@ -65,7 +67,6 @@ export default function UnstakeButton(props: any) {
             body: JSON.stringify({
               txMessage,
               signature,
-              publicKey: publicKey.toBase58(),
               mint: props.mint,
             }),
           })

@@ -1,17 +1,19 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import StakeCounter from './StakeCounter';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import StakeCounter from './StakeCounter';
 import { useEffect, useState } from 'react';
 import IceCounter from './IceCounter';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-export default function HeroLayout() {
+type Props = {
+  ice: number;
+};
+
+export default function HeroLayout({ ice }: Props) {
   const [totalSerpentsStaked, setTotalSerpentsStaked] = useState(0);
   const [totalDiamondsStaked, setTotalDiamondsStaked] = useState(0);
-  const [serpents, setSerpents] = useState([]);
-  const [diamonds, setDiamonds] = useState([]);
 
   // get total serpents staked
   useEffect(() => {
@@ -19,19 +21,11 @@ export default function HeroLayout() {
       const { stakedSerpents } = await (
         await fetch(`/api/serpents/totalStaked`)
       ).json();
-      setTotalSerpentsStaked(stakedSerpents.length);
-      setSerpents(stakedSerpents);
-    })();
-  }, []);
-
-  // get total diamonds staked
-  useEffect(() => {
-    (async () => {
       const { stakedDiamonds } = await (
         await fetch(`/api/diamonds/totalStaked`)
       ).json();
+      setTotalSerpentsStaked(stakedSerpents.length);
       setTotalDiamondsStaked(stakedDiamonds.length);
-      setDiamonds(stakedDiamonds);
     })();
   }, []);
 
@@ -73,33 +67,33 @@ export default function HeroLayout() {
             </Typography>
             <WalletMultiButton />
           </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: '60px',
-              justifyContent: 'center',
-            }}
-          >
-            <Box>
-              <StakeCounter
-                stakedCount={totalSerpentsStaked}
-                totalSupply={3333}
-                nft="serpents"
-              />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <IceCounter serpents={serpents} diamonds={diamonds} />
-            </Box>
-            <Box>
-              <StakeCounter
-                stakedCount={totalDiamondsStaked}
-                totalSupply={777}
-                nft="diamonds"
-              />
-            </Box>
-          </Box>
         </Stack>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '60px',
+            justifyContent: 'center',
+          }}
+        >
+          <Box>
+            <StakeCounter
+              stakedCount={totalSerpentsStaked}
+              totalSupply={3333}
+              nft="serpents"
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <IceCounter ice={ice} />
+          </Box>
+          <Box>
+            <StakeCounter
+              stakedCount={totalDiamondsStaked}
+              totalSupply={777}
+              nft="diamonds"
+            />
+          </Box>
+        </Box>
       </Grid>
     </Box>
   );

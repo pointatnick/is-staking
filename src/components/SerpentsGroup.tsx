@@ -7,15 +7,15 @@ import NftImage from './NftImage';
 import SerpentDetails from './SerpentDetails';
 import store, { UiSerpent } from '../store/store';
 
-const SerpentsGroup = function (props: any) {
+type Props = {
+  serpents: Serpent[];
+};
+
+const SerpentsGroup = function ({ serpents }: Props) {
   // todo: write type
-  const [serpents, setSerpents] = useState<any[]>([]);
-  // todo: write type
-  const [stakedSerpents, setStakedSerpents] = useState<any[]>([]);
+  const [unstakedSerpents, setUnstakedSerpents] = useState<Serpent[]>([]);
+  const [stakedSerpents, setStakedSerpents] = useState<Serpent[]>([]);
   const [selectedSerpent, setSelectedSerpent] = useState<any>({});
-  const [loading, setLoading] = useState(true);
-  const { connection } = useConnection();
-  const { publicKey, wallet } = useWallet();
 
   // set selected serpent
   useEffect(() => {
@@ -31,46 +31,13 @@ const SerpentsGroup = function (props: any) {
     };
   }, [selectedSerpent, setSelectedSerpent]);
 
-  // get serpents
+  // set selected serpent
   useEffect(() => {
-    if (publicKey) {
-      (async () => {
-        setLoading(true);
-
-        const { serpents: allSerpents } = await (
-          await fetch(`/api/serpents`)
-        ).json();
-        const mints = allSerpents.map((item: Serpent) => item.mint);
-
-        const { serpentMints } = await (
-          await fetch(`/api/serpents/owned?publicKey=${publicKey.toString()}`)
-        ).json();
-
-        // get serpents from user
-        setSerpents(
-          serpentMints.map((item: any) => {
-            // for getting metadata from allSerpents
-            const index = mints.indexOf(item.mint);
-            const { rank, name, imageUrl } = allSerpents[index];
-
-            return {
-              ...item,
-              rank,
-              name,
-              imageUrl,
-            };
-          })
-        );
-
-        const { stakedSerpents: allStakedSerpents } = await (
-          await fetch(`/api/serpents/staked?publicKey=${publicKey.toString()}`)
-        ).json();
-
-        setStakedSerpents(allStakedSerpents);
-        setLoading(false);
-      })();
-    }
-  }, [publicKey, connection, wallet]);
+    setUnstakedSerpents(serpents.filter((serpent) => !serpent.isStaked));
+    setStakedSerpents(
+      serpents.filter((serpent) => serpent.isStaked && !serpent.isPaired)
+    );
+  }, [serpents]);
 
   const toggleSerpent = function (serpent: UiSerpent) {
     store.setState({ pair: null });
@@ -81,9 +48,9 @@ const SerpentsGroup = function (props: any) {
     }
   };
 
-  const sortedSerpents = serpents
+  const sortedSerpents = unstakedSerpents
     .sort((a, b) => {
-      return a.rank > b.rank ? 1 : -1;
+      return a.icePerDay < b.icePerDay ? 1 : -1;
     })
     .map((serpent: UiSerpent) => (
       <Box
@@ -105,7 +72,7 @@ const SerpentsGroup = function (props: any) {
 
   const sortedStakedSerpents = stakedSerpents
     .sort((a, b) => {
-      return a.rank > b.rank ? 1 : -1;
+      return a.icePerDay < b.icePerDay ? 1 : -1;
     })
     .map((serpent: UiSerpent) => (
       <Box
@@ -142,21 +109,19 @@ const SerpentsGroup = function (props: any) {
       >
         SERPENTS
       </Typography>
-      {loading ? null : (
-        <Box
-          sx={{
-            display: 'flex',
-            gap: '8px',
-            flexWrap: 'wrap',
-            // background: '#00000055',
-            padding: '8px',
-            justifyContent: 'center',
-          }}
-        >
-          {sortedStakedSerpents}
-          {sortedSerpents}
-        </Box>
-      )}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+          // background: '#00000055',
+          padding: '8px',
+          justifyContent: 'center',
+        }}
+      >
+        {sortedStakedSerpents}
+        {sortedSerpents}
+      </Box>
     </Box>
   );
 };
