@@ -240,6 +240,7 @@ export default function StakeButtons(props: any) {
     selectedDiamond,
     selectedSerpent,
     signTransaction,
+    sendTransaction,
     wallet,
   ]);
 
