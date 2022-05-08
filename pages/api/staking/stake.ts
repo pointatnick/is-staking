@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Message, PublicKey, Transaction } from '@solana/web3.js';
+import { Message, Transaction } from '@solana/web3.js';
 import { CONNECTION } from '../../../src/config';
 import bs58 from 'bs58';
 import {

@@ -1,5 +1,7 @@
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Snackbar from '@mui/material/Snackbar';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   Token,
@@ -8,12 +10,15 @@ import {
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
+import { Diamond, IceRechargePrice } from '../../pages/api/types';
 import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
 import store from '../store/store';
 
 export default function StakeButtons(props: any) {
   const [selectedSerpent, setSelectedSerpent] = useState<any>({});
-  const [selectedDiamond, setSelectedDiamond] = useState<any>({});
+  const [selectedDiamond, setSelectedDiamond] = useState<Diamond | null>(null);
+  const [rechargeSuccessOpen, setRechargeSuccessOpen] =
+    useState<boolean>(false);
   const [selectedPair, setSelectedPair] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const { publicKey, signTransaction, wallet, sendTransaction } = useWallet();
@@ -36,6 +41,96 @@ export default function StakeButtons(props: any) {
       removeListener();
     };
   }, []);
+
+  const handleClose = (event: any, reason: any) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setRechargeSuccessOpen(false);
+  };
+
+  const rechargeDiamond = useCallback(() => {
+    setLoading(true);
+    (async () => {
+      if (publicKey && selectedDiamond) {
+        // request ICE
+        const mint = new PublicKey(selectedDiamond.mint);
+        const rechargeCost =
+          selectedDiamond.rank <= 25 && selectedDiamond.isUsedForTierOneMolt
+            ? IceRechargePrice.Expensive
+            : IceRechargePrice.Cheap;
+
+        try {
+          const instructions = [];
+          const fromTokenAddress = await Token.getAssociatedTokenAddress(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            ICE_TOKEN_MINT,
+            publicKey
+          );
+          const toTokenAddress = await Token.getAssociatedTokenAddress(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            ICE_TOKEN_MINT,
+            DAO_PUBLIC_KEY
+          );
+          instructions.push(
+            Token.createTransferCheckedInstruction(
+              TOKEN_PROGRAM_ID,
+              fromTokenAddress,
+              ICE_TOKEN_MINT,
+              toTokenAddress,
+              publicKey,
+              [],
+              rechargeCost * 1e9,
+              9
+            )
+          );
+
+          // create and sign transaction, broadcast, and confirm
+          const transaction = new Transaction().add(...instructions);
+          transaction.feePayer = publicKey;
+          transaction.recentBlockhash = (
+            await connection.getRecentBlockhash()
+          ).blockhash;
+
+          //@ts-ignore
+          const signedTx = await signTransaction(transaction);
+          const txMessage = signedTx.serializeMessage();
+          const { signature } = signedTx.signatures.filter(
+            (s) => s.publicKey.toBase58() === publicKey.toBase58()
+          )[0];
+
+          const { success } = await (
+            await fetch('/api/diamonds/recharge', {
+              method: 'post',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                staker: publicKey.toBase58(),
+                signature,
+                txMessage,
+                mint: selectedDiamond.mint,
+              }),
+            })
+          ).json();
+
+          if (success) {
+            setLoading(false);
+            setRechargeSuccessOpen(true);
+            setTimeout(() => {
+              location.reload();
+            }, 2000);
+          } else {
+            setLoading(false);
+          }
+        } catch (err) {
+          setLoading(false);
+          console.error(err);
+        }
+      }
+    })();
+  }, [connection, publicKey, selectedDiamond]);
 
   const stakeNft = useCallback(() => {
     setLoading(true);
@@ -245,7 +340,7 @@ export default function StakeButtons(props: any) {
 
   const pairSerpent = useCallback(() => {
     (async () => {
-      if (publicKey) {
+      if (publicKey && selectedDiamond) {
         setLoading(true);
 
         const { success } = await (
@@ -503,7 +598,33 @@ export default function StakeButtons(props: any) {
       >
         Unpair
       </Button>
+      {!selectedDiamond?.hasEnergy &&
+      selectedDiamond?.hasEnergy !== undefined ? (
+        <Button
+          variant="contained"
+          sx={{
+            flex: '1',
+            ':disabled': {
+              color: '#ffffff55',
+              backgroundColor: '#39322655',
+            },
+          }}
+          onClick={rechargeDiamond}
+        >
+          Recharge
+        </Button>
+      ) : null}
       <Box sx={{ flex: '2' }} />
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={rechargeSuccessOpen}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert variant="filled" severity="success" sx={{ width: '100%' }}>
+          Recharge has been queued, please check in a few minutes!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

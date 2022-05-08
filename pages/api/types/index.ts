@@ -32,10 +32,10 @@ export type Serpent = Nft & {
 //   Base = 'Base', // tier 4
 // }
 
-// export enum EnergyCharged {
-//   Charged = 'yes',
-//   NotCharged = 'no',
-// }
+export enum EnergyCharged {
+  Charged = 'yes',
+  NotCharged = 'no',
+}
 
 /**
  * all PairedSerpents are staked
@@ -58,3 +58,10 @@ export type IceAudit = {
   iceCollected: number;
   date: Date;
 };
+
+// -Recharge will cost 50,000 $ICE for diamonds spent on Tier 1 Molting & is currently top 25 in rarity
+// -Recharge will cost 15,000 $ICE for every other case.
+export enum IceRechargePrice {
+  Cheap = 15000,
+  Expensive = 50000,
+}
