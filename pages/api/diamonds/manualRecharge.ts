@@ -1,9 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
-import { Message, PublicKey, Transaction } from '@solana/web3.js';
-import { CONNECTION } from '../../../src/config';
-import bs58 from 'bs58';
-import axios from 'axios';
 import { invokeLambda } from '../../../lib/lambda';
 import { generateMetadata } from './recharge';
 
@@ -13,7 +8,7 @@ type Data = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<Data | null>
 ) {
   if (req.method === 'POST') {
     const { password, mint } = req.body;

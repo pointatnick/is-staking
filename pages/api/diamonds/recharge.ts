@@ -65,9 +65,10 @@ export async function generateMetadata(mint: string) {
   return newMetadataData;
 }
 
-export function recharge(diamond) {
+export function recharge(diamond: any) {
   const energyChargedAttrIndex = diamond.attributes.findIndex(
-    (attr) => attr.trait_type === 'energy charged'
+    (attr: { trait_type: string; value: string }) =>
+      attr.trait_type === 'energy charged'
   );
   diamond.attributes[energyChargedAttrIndex].value = EnergyCharged.Charged;
   return diamond;

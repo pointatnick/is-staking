@@ -130,7 +130,7 @@ export default function StakeButtons(props: any) {
         }
       }
     })();
-  }, [connection, publicKey, selectedDiamond]);
+  }, [connection, publicKey, selectedDiamond, signTransaction]);
 
   const stakeNft = useCallback(() => {
     setLoading(true);
