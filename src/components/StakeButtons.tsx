@@ -325,8 +325,8 @@ export default function StakeButtons(props: any) {
             // owner might never have had ICE before
             // TODO: REFACTOR
             const toTokenAddress = await getAssociatedTokenAddress(
-              ICE_TOKEN_MINT,
-              publicKey
+              publicKey,
+              ICE_TOKEN_MINT
             );
             const toTokenAccount = await connection.getAccountInfo(
               toTokenAddress
@@ -373,7 +373,7 @@ export default function StakeButtons(props: any) {
             // claim ICE
             // TODO: reflect this somewhere
             const { error: claimError } = await (
-              await fetch('/api/staking/withdraw', {
+              await fetch('/api/pairedSerpents/withdraw', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -64,8 +64,8 @@ export default function IceCounter({ ice }: Props) {
         // create associated token accounts for my token if they don't exist yet
         // owner might never have had ICE before
         const toTokenAddress = await getAssociatedTokenAddress(
-          ICE_TOKEN_MINT,
-          publicKey
+          publicKey,
+          ICE_TOKEN_MINT
         );
         const toTokenAccount = await connection.getAccountInfo(toTokenAddress);
         const instructions = [];

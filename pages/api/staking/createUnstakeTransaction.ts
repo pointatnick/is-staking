@@ -15,7 +15,6 @@ import {
 import { getIce } from '../ice/[mint]';
 import { getDiamonds, getSerpents } from '../users/[publicKey]';
 import { getAssociatedTokenAddress } from '../../../lib/metaplex';
-import nacl from 'tweetnacl';
 
 type CreateUnstakeTransactionRequest = {
   publicKey: string;
