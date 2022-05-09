@@ -179,7 +179,6 @@ export default function IceCounter({ ice }: Props) {
         <Snackbar
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           open={errorOpen}
-          autoHideDuration={6000}
           onClose={handleErrorClose}
         >
           <Alert variant="filled" severity="error" sx={{ width: '100%' }}>
