@@ -23,7 +23,7 @@ const config = {
 export const RPC_URL = config[process.env.SOLANA_NETWORK].rpcUrl;
 export const CONNECTION = new Connection(
   config[process.env.SOLANA_NETWORK].rpcUrl,
-  { commitment: 'confirmed' }
+  { commitment: 'confirmed', confirmTransactionInitialTimeout: 60000 }
 );
 export const ICE_TOKEN_MINT = new PublicKey(
   config[process.env.SOLANA_NETWORK].iceTokenMintPublicKey
