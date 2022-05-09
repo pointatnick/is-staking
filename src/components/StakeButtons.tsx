@@ -531,6 +531,7 @@ export default function StakeButtons(props: any) {
             },
           }}
           onClick={rechargeDiamond}
+          disabled={loading}
         >
           Recharge
         </Button>
