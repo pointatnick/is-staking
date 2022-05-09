@@ -18,16 +18,17 @@ import {
 } from '../config';
 import store from '../store/store';
 import { getAssociatedTokenAddress } from '../../lib/metaplex';
-import bs58 from 'bs58';
+import LoadingProgress from './LoadingProgress';
 
 export default function StakeButtons(props: any) {
   const [selectedSerpent, setSelectedSerpent] = useState<any>({});
   const [selectedDiamond, setSelectedDiamond] = useState<Diamond | null>(null);
-  const [rechargeSuccessOpen, setRechargeSuccessOpen] =
-    useState<boolean>(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [error, setError] = useState('');
+  const [rechargeSuccessOpen, setRechargeSuccessOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const { publicKey, signTransaction, wallet, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
 
   // set store data
@@ -48,6 +49,14 @@ export default function StakeButtons(props: any) {
     };
   }, []);
 
+  const handleErrorClose = (event: any, reason: any) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setErrorOpen(false);
+  };
+
   const handleClose = (event: any, reason: any) => {
     if (reason === 'clickaway') {
       return;
@@ -66,64 +75,81 @@ export default function StakeButtons(props: any) {
             ? IceRechargePrice.Expensive
             : IceRechargePrice.Cheap;
 
-        try {
-          const instructions = [];
-          const fromAta = await getAssociatedTokenAddress(
-            publicKey,
-            ICE_TOKEN_MINT
-          );
-          instructions.push(
-            Token.createTransferCheckedInstruction(
-              TOKEN_PROGRAM_ID,
-              fromAta,
-              ICE_TOKEN_MINT,
-              DAO_ICE_TOKEN_ADDRESS,
+        let tokenAccount = await connection.getParsedTokenAccountsByOwner(
+          publicKey,
+          { mint: ICE_TOKEN_MINT }
+        );
+        const userIceAmount =
+          tokenAccount.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+        const hasEnoughIce = userIceAmount >= rechargeCost;
+        if (hasEnoughIce) {
+          try {
+            const instructions = [];
+            const fromAta = await getAssociatedTokenAddress(
               publicKey,
-              [],
-              rechargeCost * 1e9,
-              9
-            )
-          );
+              ICE_TOKEN_MINT
+            );
+            instructions.push(
+              Token.createTransferCheckedInstruction(
+                TOKEN_PROGRAM_ID,
+                fromAta,
+                ICE_TOKEN_MINT,
+                DAO_ICE_TOKEN_ADDRESS,
+                publicKey,
+                [],
+                rechargeCost * 1e9,
+                9
+              )
+            );
 
-          // create and sign transaction, broadcast, and confirm
-          const transaction = new Transaction().add(...instructions);
-          transaction.feePayer = publicKey;
-          transaction.recentBlockhash = (
-            await connection.getRecentBlockhash()
-          ).blockhash;
+            // create and sign transaction, broadcast, and confirm
+            const transaction = new Transaction().add(...instructions);
+            transaction.feePayer = publicKey;
+            transaction.recentBlockhash = (
+              await connection.getRecentBlockhash()
+            ).blockhash;
 
-          //@ts-ignore
-          const signedTx = await signTransaction(transaction);
-          const txMessage = signedTx.serializeMessage();
-          const { signature } = signedTx.signatures.filter(
-            (s) => s.publicKey.toBase58() === publicKey.toBase58()
-          )[0];
+            //@ts-ignore
+            const signedTx = await signTransaction(transaction);
+            const txMessage = signedTx.serializeMessage();
+            const { signature } = signedTx.signatures.filter(
+              (s) => s.publicKey.toBase58() === publicKey.toBase58()
+            )[0];
 
-          const { success } = await (
-            await fetch('/api/diamonds/recharge', {
-              method: 'post',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                staker: publicKey.toBase58(),
-                signature,
-                txMessage,
-                mint: selectedDiamond.mint,
-              }),
-            })
-          ).json();
+            const { success } = await (
+              await fetch('/api/diamonds/recharge', {
+                method: 'post',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  staker: publicKey.toBase58(),
+                  signature,
+                  txMessage,
+                  mint: selectedDiamond.mint,
+                }),
+              })
+            ).json();
 
-          if (success) {
+            if (success) {
+              setLoading(false);
+              setRechargeSuccessOpen(true);
+              setTimeout(() => {
+                location.reload();
+              }, 4000);
+            } else {
+              setError('Action failed, please try again later');
+              setErrorOpen(true);
+              setLoading(false);
+            }
+          } catch (err) {
             setLoading(false);
-            setRechargeSuccessOpen(true);
-            setTimeout(() => {
-              location.reload();
-            }, 4000);
-          } else {
-            setLoading(false);
+            setError('Action failed, please try again later');
+            setErrorOpen(true);
+            console.error(err);
           }
-        } catch (err) {
+        } else {
           setLoading(false);
-          console.error(err);
+          setError('Not enough ICE');
+          setErrorOpen(true);
         }
       }
     })();
@@ -198,13 +224,16 @@ export default function StakeButtons(props: any) {
 
           if (success) {
             // TODO: set success instead
-            setLoading(false);
             location.reload();
           } else {
             setLoading(false);
+            setError('Action failed, please try again later');
+            setErrorOpen(true);
           }
         } catch (err) {
           setLoading(false);
+          setError('Action failed, please try again later');
+          setErrorOpen(true);
           console.error(err);
         }
       }
@@ -270,10 +299,16 @@ export default function StakeButtons(props: any) {
           // reload the page to reflect changes
           if (!claimError) {
             location.reload();
+          } else {
+            setLoading(false);
+            setError('Action failed, please try again later');
+            setErrorOpen(true);
           }
         } catch (err) {
           console.error(err);
           setLoading(false);
+          setError('Action failed, please try again later');
+          setErrorOpen(true);
         }
       }
     })();
@@ -296,11 +331,12 @@ export default function StakeButtons(props: any) {
           })
         ).json();
 
-        setLoading(false);
-
-        // todo: error handling
         if (success) {
           location.reload();
+        } else {
+          setLoading(false);
+          setError('Action failed, please try again later');
+          setErrorOpen(true);
         }
       }
     })();
@@ -397,8 +433,9 @@ export default function StakeButtons(props: any) {
           }
         } catch (error) {
           console.log(error);
-        } finally {
           setLoading(false);
+          setError('Action failed, please try again later');
+          setErrorOpen(true);
         }
       }
     })();
@@ -475,7 +512,7 @@ export default function StakeButtons(props: any) {
         onClick={stakeNft}
         disabled={stakeBtnShouldBeDisabled() || loading}
       >
-        Stake
+        {loading ? <LoadingProgress></LoadingProgress> : 'Stake'}
       </Button>
       <Button
         variant="contained"
@@ -489,7 +526,7 @@ export default function StakeButtons(props: any) {
         onClick={unstakeNft}
         disabled={unstakeBtnShouldBeDisabled() || loading}
       >
-        Unstake
+        {loading ? <LoadingProgress></LoadingProgress> : 'Unstake'}
       </Button>
       <Button
         variant="contained"
@@ -503,7 +540,7 @@ export default function StakeButtons(props: any) {
         onClick={pairSerpent}
         disabled={pairBtnShouldBeDisabled() || loading}
       >
-        Pair
+        {loading ? <LoadingProgress></LoadingProgress> : 'Pair'}
       </Button>
       <Button
         variant="contained"
@@ -517,7 +554,7 @@ export default function StakeButtons(props: any) {
         onClick={unpairSerpent}
         disabled={unpairBtnShouldBeDisabled || loading}
       >
-        Unpair
+        {loading ? <LoadingProgress></LoadingProgress> : 'Unpair'}
       </Button>
       {!selectedDiamond?.hasEnergy &&
       selectedDiamond?.hasEnergy !== undefined ? (
@@ -533,7 +570,7 @@ export default function StakeButtons(props: any) {
           onClick={rechargeDiamond}
           disabled={loading}
         >
-          Recharge
+          {loading ? <LoadingProgress></LoadingProgress> : 'Recharge'}
         </Button>
       ) : null}
       <Box sx={{ flex: '2' }} />
@@ -545,6 +582,16 @@ export default function StakeButtons(props: any) {
       >
         <Alert variant="filled" severity="success" sx={{ width: '100%' }}>
           Recharge has been queued, please check in a few minutes!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={errorOpen}
+        autoHideDuration={6000}
+        onClose={handleErrorClose}
+      >
+        <Alert variant="filled" severity="error" sx={{ width: '100%' }}>
+          {error}
         </Alert>
       </Snackbar>
     </Box>

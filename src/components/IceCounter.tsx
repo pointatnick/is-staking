@@ -27,8 +27,18 @@ export default function IceCounter({ ice }: Props) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState(0);
-  const { publicKey, signTransaction, wallet, sendTransaction } = useWallet();
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [error, setError] = useState('');
+  const { publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
+
+  const handleErrorClose = (event: any, reason: any) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setErrorOpen(false);
+  };
 
   const onClaim = useCallback(async () => {
     setLoading(true);
@@ -164,6 +174,16 @@ export default function IceCounter({ ice }: Props) {
         >
           <Alert severity="warning" sx={{ fontSize: '16px' }}>
             Please wait {msToTimeString(time)} before claiming ICE again
+          </Alert>
+        </Snackbar>
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={errorOpen}
+          autoHideDuration={6000}
+          onClose={handleErrorClose}
+        >
+          <Alert variant="filled" severity="error" sx={{ width: '100%' }}>
+            {error}
           </Alert>
         </Snackbar>
       </Box>
