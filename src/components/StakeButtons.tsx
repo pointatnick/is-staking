@@ -577,7 +577,6 @@ export default function StakeButtons(props: any) {
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={rechargeSuccessOpen}
-        autoHideDuration={6000}
         onClose={handleClose}
       >
         <Alert variant="filled" severity="success" sx={{ width: '100%' }}>
@@ -587,7 +586,6 @@ export default function StakeButtons(props: any) {
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={errorOpen}
-        autoHideDuration={6000}
         onClose={handleErrorClose}
       >
         <Alert variant="filled" severity="error" sx={{ width: '100%' }}>
