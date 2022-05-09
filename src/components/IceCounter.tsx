@@ -126,20 +126,21 @@ export default function IceCounter({ ice }: Props) {
             body: JSON.stringify({
               txMessage,
               signature,
+              publicKey: publicKey.toBase58(),
             }),
           })
         ).json();
         if (claimError) {
           throw new Error('claim error');
         }
-        // zero out ICE
-        await fetch('/api/ice/withdraw', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            publicKey: publicKey.toBase58(),
-          }),
-        });
+        // // zero out ICE
+        // await fetch('/api/ice/withdraw', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({
+        //     publicKey: publicKey.toBase58(),
+        //   }),
+        // });
         location.reload();
       } catch (error) {
         console.log(error);

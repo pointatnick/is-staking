@@ -106,10 +106,19 @@ function calculateIce(
 
     const icePerSecond = cur.icePerDay / 24 / 60 / 60;
     // asserting dates could cause issues
-    const stakedDate = Date.parse(cur.lastStaked!.toISOString());
-    const old = cur.isPaired
-      ? Date.parse(cur.lastPaired!.toISOString())
-      : Date.parse(new Date().toISOString());
+    let stakedDate = Date.parse(new Date().toISOString());
+    let old = Date.parse(new Date().toISOString());
+    if (cur.lastStaked) {
+      stakedDate = Date.parse(cur.lastStaked.toISOString());
+      old =
+        cur.lastPaired &&
+        cur.lastPaired !== undefined &&
+        cur.lastPaired !== null &&
+        cur.isPaired
+          ? Date.parse(cur.lastPaired.toISOString())
+          : old;
+    }
+
     let diff = old - stakedDate;
 
     // use diff to calculate ICE so far

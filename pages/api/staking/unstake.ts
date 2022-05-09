@@ -21,7 +21,7 @@ export default async function handler(
     new Uint8Array(txMessage.data),
     daoKeypair.secretKey
   );
-  const transaction = Transaction.populate(Message.from(txMessage.data), [
+  const tx = Transaction.populate(Message.from(txMessage.data), [
     bs58.encode(signature.data),
     bs58.encode(daoSignature),
   ]);
@@ -31,10 +31,10 @@ export default async function handler(
 
   while (retries < MAX_RETRIES) {
     try {
-      const txHash = await CONNECTION.sendRawTransaction(
-        transaction.serialize(),
-        { preflightCommitment: 'confirmed', skipPreflight: false }
-      );
+      const txHash = await CONNECTION.sendRawTransaction(tx.serialize(), {
+        preflightCommitment: 'confirmed',
+        skipPreflight: false,
+      });
       const result = await CONNECTION.confirmTransaction(txHash);
       if (result.value && result.value.err === null) {
         console.log('transaction confirmed', result);
