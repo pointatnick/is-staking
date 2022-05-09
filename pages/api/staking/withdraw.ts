@@ -3,12 +3,17 @@ import * as bs58 from 'bs58';
 import { Message, Keypair, Transaction } from '@solana/web3.js';
 import { CONNECTION } from '../../../src/config';
 import nacl from 'tweetnacl';
+import {
+  clientPromise,
+  runTransactionWithRetry,
+  zeroOutIceForStaker,
+} from '../../../lib/mongodbv2';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<{ error: boolean }>
 ) {
-  const { txMessage, signature } = req.body;
+  const { txMessage, signature, publicKey } = req.body;
 
   // send ICE to user
   const daoKeypair = Keypair.fromSecretKey(
@@ -18,7 +23,7 @@ export default async function handler(
     new Uint8Array(txMessage.data),
     daoKeypair.secretKey
   );
-  const transaction = Transaction.populate(Message.from(txMessage.data), [
+  const tx = Transaction.populate(Message.from(txMessage.data), [
     bs58.encode(signature.data),
     bs58.encode(daoSignature),
   ]);
@@ -28,12 +33,13 @@ export default async function handler(
 
   while (retries < MAX_RETRIES) {
     try {
-      const txHash = await CONNECTION.sendRawTransaction(
-        transaction.serialize(),
-        { preflightCommitment: 'confirmed', skipPreflight: false }
-      );
+      const txHash = await CONNECTION.sendRawTransaction(tx.serialize(), {
+        preflightCommitment: 'confirmed',
+        skipPreflight: false,
+      });
       const result = await CONNECTION.confirmTransaction(txHash);
       if (result.value && result.value.err === null) {
+        await withdrawIce(publicKey);
         return res.status(200).json({ error: false });
       }
     } catch (error) {
@@ -45,4 +51,14 @@ export default async function handler(
       retries += 1;
     }
   }
+}
+
+export async function withdrawIce(staker: string) {
+  const mongoClient = await clientPromise;
+  await runTransactionWithRetry(
+    zeroOutIceForStaker,
+    mongoClient,
+    mongoClient.startSession(),
+    [staker]
+  );
 }

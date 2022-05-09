@@ -39,7 +39,7 @@ export default async function handler(
       if (serpent !== null && diamond !== null) {
         const userOwnsSerpent = serpent.staker === publicKey;
         const userOwnsDiamond = diamond.staker === publicKey;
-        const pairExists = serpent.isPaired || diamond?.isPaired;
+        const pairExists = serpent.isPaired || diamond.isPaired;
 
         if (
           userOwnsSerpent &&

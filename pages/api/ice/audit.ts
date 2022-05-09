@@ -23,7 +23,7 @@ export async function deleteIceAudit(filter: Filter<IceAudit>) {
   await mongoClient
     .db(SERPENTS_DB)
     .collection(ICE_AUDIT_COLLECTION)
-    .deleteOne(filter);
+    .findOneAndDelete(filter);
 }
 
 export async function getMostRecentAudit(publicKey: string, claimType: string) {
