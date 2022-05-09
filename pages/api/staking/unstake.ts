@@ -21,10 +21,13 @@ export default async function handler(
     new Uint8Array(txMessage.data),
     daoKeypair.secretKey
   );
+  console.log(daoSignature);
   const tx = Transaction.populate(Message.from(txMessage.data), [
     bs58.encode(signature.data),
     bs58.encode(daoSignature),
   ]);
+
+  // verify transaction
 
   let retries = 0;
   let MAX_RETRIES = 3;

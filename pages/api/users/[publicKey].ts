@@ -157,5 +157,5 @@ export default async function handler(
     return res.status(200).json({ serpents, diamonds, pairedSerpents, ice });
   }
 
-  return res.status(404).json(null);
+  return res.status(405).json(null);
 }

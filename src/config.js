@@ -31,7 +31,7 @@ export const ICE_TOKEN_MINT = new PublicKey(
 export const DAO_PUBLIC_KEY = new PublicKey(
   'f6gjSSzNYV44aLs5ocmY19XtbovELJAf6w5DTLEjdBL'
 );
-export const DAO_ICE_TOKEN_ACCOUNT = new PublicKey(
+export const DAO_ICE_TOKEN_ADDRESS = new PublicKey(
   '7bYLu5xNTsz1MaXnN4b3AzV5xYH7T2mDLGfzE6tChPFG'
 );
 export const METAPLEX_TOKEN_PROGRAM_ID = new PublicKey(

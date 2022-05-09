@@ -3,16 +3,17 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
-import { Token } from '@solana/spl-token';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  Token,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Transaction } from '@solana/web3.js';
 import { useCallback, useState } from 'react';
+import { getAssociatedTokenAddress } from '../../lib/metaplex';
 import {
-  DAO_ICE_TOKEN_ACCOUNT,
+  DAO_ICE_TOKEN_ADDRESS,
   DAO_PUBLIC_KEY,
   ICE_TOKEN_MINT,
 } from '../config';
@@ -60,20 +61,9 @@ export default function IceCounter({ ice }: Props) {
       }
 
       try {
-        const mintToken = new Token(
-          connection,
-          ICE_TOKEN_MINT,
-          TOKEN_PROGRAM_ID,
-          //@ts-ignore
-          wallet
-        );
         // create associated token accounts for my token if they don't exist yet
         // owner might never have had ICE before
-        const fromTokenAccount =
-          await mintToken.getOrCreateAssociatedAccountInfo(DAO_PUBLIC_KEY);
-        const toTokenAddress = await Token.getAssociatedTokenAddress(
-          ASSOCIATED_TOKEN_PROGRAM_ID,
-          TOKEN_PROGRAM_ID,
+        const toTokenAddress = await getAssociatedTokenAddress(
           ICE_TOKEN_MINT,
           publicKey
         );
@@ -95,7 +85,7 @@ export default function IceCounter({ ice }: Props) {
         instructions.push(
           Token.createTransferCheckedInstruction(
             TOKEN_PROGRAM_ID,
-            fromTokenAccount.address,
+            DAO_ICE_TOKEN_ADDRESS,
             ICE_TOKEN_MINT,
             toTokenAddress,
             DAO_PUBLIC_KEY,
@@ -133,14 +123,6 @@ export default function IceCounter({ ice }: Props) {
         if (claimError) {
           throw new Error('claim error');
         }
-        // // zero out ICE
-        // await fetch('/api/ice/withdraw', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     publicKey: publicKey.toBase58(),
-        //   }),
-        // });
         location.reload();
       } catch (error) {
         console.log(error);
@@ -154,7 +136,7 @@ export default function IceCounter({ ice }: Props) {
         setLoading(false);
       }
     }
-  }, [publicKey, connection, signTransaction, wallet]);
+  }, [publicKey, connection, signTransaction]);
 
   return publicKey ? (
     <Box>

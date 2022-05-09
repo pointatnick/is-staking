@@ -11,8 +11,14 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
 import { Diamond, IceRechargePrice } from '../../pages/api/types';
-import { DAO_PUBLIC_KEY, ICE_TOKEN_MINT } from '../config';
+import {
+  DAO_ICE_TOKEN_ADDRESS,
+  DAO_PUBLIC_KEY,
+  ICE_TOKEN_MINT,
+} from '../config';
 import store from '../store/store';
+import { getAssociatedTokenAddress } from '../../lib/metaplex';
+import bs58 from 'bs58';
 
 export default function StakeButtons(props: any) {
   const [selectedSerpent, setSelectedSerpent] = useState<any>({});
@@ -55,7 +61,6 @@ export default function StakeButtons(props: any) {
     (async () => {
       if (publicKey && selectedDiamond) {
         // request ICE
-        const mint = new PublicKey(selectedDiamond.mint);
         const rechargeCost =
           selectedDiamond.rank <= 25 && selectedDiamond.isUsedForTierOneMolt
             ? IceRechargePrice.Expensive
@@ -63,24 +68,16 @@ export default function StakeButtons(props: any) {
 
         try {
           const instructions = [];
-          const fromTokenAddress = await Token.getAssociatedTokenAddress(
-            ASSOCIATED_TOKEN_PROGRAM_ID,
-            TOKEN_PROGRAM_ID,
-            ICE_TOKEN_MINT,
-            publicKey
-          );
-          const toTokenAddress = await Token.getAssociatedTokenAddress(
-            ASSOCIATED_TOKEN_PROGRAM_ID,
-            TOKEN_PROGRAM_ID,
-            ICE_TOKEN_MINT,
-            DAO_PUBLIC_KEY
+          const fromAta = await getAssociatedTokenAddress(
+            publicKey,
+            ICE_TOKEN_MINT
           );
           instructions.push(
             Token.createTransferCheckedInstruction(
               TOKEN_PROGRAM_ID,
-              fromTokenAddress,
+              fromAta,
               ICE_TOKEN_MINT,
-              toTokenAddress,
+              DAO_ICE_TOKEN_ADDRESS,
               publicKey,
               [],
               rechargeCost * 1e9,
@@ -120,7 +117,7 @@ export default function StakeButtons(props: any) {
             setRechargeSuccessOpen(true);
             setTimeout(() => {
               location.reload();
-            }, 2000);
+            }, 4000);
           } else {
             setLoading(false);
           }
@@ -143,30 +140,18 @@ export default function StakeButtons(props: any) {
 
         try {
           const instructions = [];
-          const fromTokenAddress = await Token.getAssociatedTokenAddress(
-            ASSOCIATED_TOKEN_PROGRAM_ID,
-            TOKEN_PROGRAM_ID,
-            mint,
-            publicKey
-          );
-          const toTokenAddress = await Token.getAssociatedTokenAddress(
-            ASSOCIATED_TOKEN_PROGRAM_ID,
-            TOKEN_PROGRAM_ID,
-            mint,
-            DAO_PUBLIC_KEY
-          );
+          const fromAta = await getAssociatedTokenAddress(publicKey, mint);
+          const toAta = await getAssociatedTokenAddress(DAO_PUBLIC_KEY, mint);
 
           // Check if destination associated token account exists
-          const toTokenAccount = await connection.getAccountInfo(
-            toTokenAddress
-          );
+          const toTokenAccount = await connection.getAccountInfo(toAta);
           if (toTokenAccount === null) {
             instructions.push(
               Token.createAssociatedTokenAccountInstruction(
                 ASSOCIATED_TOKEN_PROGRAM_ID,
                 TOKEN_PROGRAM_ID,
                 mint,
-                toTokenAddress,
+                toAta,
                 DAO_PUBLIC_KEY,
                 publicKey
               )
@@ -176,8 +161,8 @@ export default function StakeButtons(props: any) {
           instructions.push(
             Token.createTransferInstruction(
               TOKEN_PROGRAM_ID,
-              fromTokenAddress,
-              toTokenAddress,
+              fromAta!,
+              toAta,
               publicKey,
               [],
               1
@@ -237,63 +222,29 @@ export default function StakeButtons(props: any) {
     (async () => {
       if (publicKey) {
         let selectedNft = selectedDiamond ? selectedDiamond : selectedSerpent;
+        let selectedNftMint = new PublicKey(selectedNft.mint);
 
         // Unstake the diamond
-        const mintToken = new Token(
-          connection,
-          new PublicKey(selectedNft.mint),
-          TOKEN_PROGRAM_ID,
-          //@ts-ignore
-          wallet
+        const fromAta = await getAssociatedTokenAddress(
+          DAO_PUBLIC_KEY,
+          selectedNftMint
         );
-
-        const nftFromTokenAccount =
-          await mintToken.getOrCreateAssociatedAccountInfo(DAO_PUBLIC_KEY);
-        let ata: PublicKey;
-        try {
-          ata = (
-            await connection.getParsedTokenAccountsByOwner(publicKey, {
-              mint: new PublicKey(selectedNft.mint),
-            })
-          ).value[0].pubkey;
-        } catch (error) {
-          console.error('token account does not exist, creating one');
-          ata = await Token.getAssociatedTokenAddress(
-            ASSOCIATED_TOKEN_PROGRAM_ID,
-            TOKEN_PROGRAM_ID,
-            ICE_TOKEN_MINT,
-            publicKey
-          );
-          const newAtaTx = new Transaction().add(
-            Token.createAssociatedTokenAccountInstruction(
-              ASSOCIATED_TOKEN_PROGRAM_ID,
-              TOKEN_PROGRAM_ID,
-              ICE_TOKEN_MINT,
-              ata,
-              publicKey,
-              publicKey
-            )
-          );
-          await sendTransaction(newAtaTx, connection);
-        }
-
+        let toAta = await getAssociatedTokenAddress(publicKey, selectedNftMint);
         const response = await (
           await fetch('/api/staking/createUnstakeTransaction', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               publicKey: publicKey.toBase58(),
-              mint: selectedNft.mint,
-              nftFromTokenAddress: nftFromTokenAccount.address.toString(),
-              nftToTokenAddress: ata.toBase58(),
+              mint: selectedNftMint.toBase58(),
+              nftFromTokenAddress: fromAta.toBase58(),
+              nftToTokenAddress: toAta.toBase58(),
             }),
           })
         ).json();
-
         const { txMessage, daoSignature } = response;
-
-        // slap signature back on
-        const transaction = Transaction.from(txMessage.data);
+        // console.log(daoSignature);
+        const transaction = Transaction.from(Buffer.from(txMessage, 'base64'));
 
         try {
           // prompt wallet to sign
@@ -303,7 +254,6 @@ export default function StakeButtons(props: any) {
           const signature = tx.signatures.filter(
             (s) => s.publicKey.toBase58() === publicKey.toBase58()
           )[0].signature;
-
           // claim ICE
           // TODO: reflect this somewhere
           const { error: claimError } = await (
@@ -313,11 +263,10 @@ export default function StakeButtons(props: any) {
               body: JSON.stringify({
                 txMessage,
                 signature,
-                mint: selectedNft.mint,
+                mint: selectedNftMint.toBase58(),
               }),
             })
           ).json();
-
           // reload the page to reflect changes
           if (!claimError) {
             location.reload();
@@ -328,15 +277,7 @@ export default function StakeButtons(props: any) {
         }
       }
     })();
-  }, [
-    publicKey,
-    connection,
-    selectedDiamond,
-    selectedSerpent,
-    signTransaction,
-    sendTransaction,
-    wallet,
-  ]);
+  }, [publicKey, selectedDiamond, selectedSerpent, signTransaction]);
 
   const pairSerpent = useCallback(() => {
     (async () => {
@@ -380,29 +321,16 @@ export default function StakeButtons(props: any) {
 
         try {
           if (iceToCollect) {
-            const mintToken = new Token(
-              connection,
-              ICE_TOKEN_MINT,
-              TOKEN_PROGRAM_ID,
-              //@ts-ignore
-              wallet
-            );
-
             // create associated token accounts for my token if they don't exist yet
             // owner might never have had ICE before
-            const fromTokenAccount =
-              await mintToken.getOrCreateAssociatedAccountInfo(DAO_PUBLIC_KEY);
-            const toTokenAddress = await Token.getAssociatedTokenAddress(
-              ASSOCIATED_TOKEN_PROGRAM_ID,
-              TOKEN_PROGRAM_ID,
+            // TODO: REFACTOR
+            const toTokenAddress = await getAssociatedTokenAddress(
               ICE_TOKEN_MINT,
               publicKey
             );
-
             const toTokenAccount = await connection.getAccountInfo(
               toTokenAddress
             );
-
             const instructions = [];
             if (toTokenAccount === null) {
               // if destination associated token account doesn't exist, make one
@@ -417,11 +345,10 @@ export default function StakeButtons(props: any) {
                 )
               );
             }
-
             instructions.push(
               Token.createTransferCheckedInstruction(
                 TOKEN_PROGRAM_ID,
-                fromTokenAccount.address,
+                DAO_ICE_TOKEN_ADDRESS,
                 ICE_TOKEN_MINT,
                 toTokenAddress,
                 DAO_PUBLIC_KEY,
@@ -430,7 +357,6 @@ export default function StakeButtons(props: any) {
                 9
               )
             );
-
             // create and sign transaction, serialize and send for user to sign
             const transaction = new Transaction().add(...instructions);
             // requires user to sign
@@ -438,14 +364,12 @@ export default function StakeButtons(props: any) {
             transaction.recentBlockhash = (
               await connection.getRecentBlockhash()
             ).blockhash;
-
             //@ts-ignore
             const tx = await signTransaction(transaction);
             const txMessage = tx.serializeMessage();
             const signature = tx.signatures.filter(
               (s) => s.publicKey.toBase58() === publicKey.toBase58()
             )[0].signature;
-
             // claim ICE
             // TODO: reflect this somewhere
             const { error: claimError } = await (
@@ -458,11 +382,9 @@ export default function StakeButtons(props: any) {
                 }),
               })
             ).json();
-
             if (claimError) {
               throw new Error('claim error');
             }
-
             await fetch('/api/pairedSerpents/unpair', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -471,7 +393,6 @@ export default function StakeButtons(props: any) {
                 pairedSerpentMint: selectedPair.mint,
               }),
             });
-
             location.reload();
           }
         } catch (error) {
@@ -481,7 +402,7 @@ export default function StakeButtons(props: any) {
         }
       }
     })();
-  }, [publicKey, selectedPair, connection, signTransaction, wallet]);
+  }, [publicKey, selectedPair, connection, signTransaction]);
 
   const stakeBtnShouldBeDisabled = function () {
     if (selectedDiamond && selectedSerpent) {

@@ -8,22 +8,28 @@ import * as bs58 from 'bs58';
 import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import {
   CONNECTION,
+  DAO_ICE_TOKEN_ADDRESS,
   DAO_PUBLIC_KEY,
   ICE_TOKEN_MINT,
 } from '../../../src/config';
 import { getIce } from '../ice/[mint]';
 import { getDiamonds, getSerpents } from '../users/[publicKey]';
+import { getAssociatedTokenAddress } from '../../../lib/metaplex';
+import nacl from 'tweetnacl';
+
+type CreateUnstakeTransactionRequest = {
+  publicKey: string;
+  mint: string;
+  nftFromTokenAddress: string;
+  nftToTokenAddress: string;
+};
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<
-    | {
-        txMessage: Buffer;
-      }
-    | { error: string }
-  >
+  res: NextApiResponse
 ) {
-  const { publicKey, mint, nftFromTokenAddress, nftToTokenAddress } = req.body;
+  const { publicKey, mint, nftFromTokenAddress, nftToTokenAddress } =
+    req.body as CreateUnstakeTransactionRequest;
 
   // verify owner
   const stakedSerpents = await getSerpents({ staker: publicKey, mint });
@@ -36,32 +42,25 @@ export default async function handler(
   // get ice quantity from database
   const ice = +(await getIce(mint)).toFixed(9);
   const user = new PublicKey(publicKey);
+  const fromAta = new PublicKey(nftFromTokenAddress);
+  const toAta = new PublicKey(nftToTokenAddress);
+  const mintAddress = new PublicKey(mint);
   const daoKeypair = Keypair.fromSecretKey(
     bs58.decode(process.env.DAO_PRIVATE_KEY!)
   );
 
   try {
-    const iceMint = new Token(
-      CONNECTION,
-      ICE_TOKEN_MINT,
-      TOKEN_PROGRAM_ID,
-      daoKeypair
-    );
     // create associated token accounts for my token if they don't exist yet
     // owner might never have had ICE before
-    const iceFromTokenAccount = await iceMint.getOrCreateAssociatedAccountInfo(
-      DAO_PUBLIC_KEY
-    );
-    const iceToTokenAddress = await Token.getAssociatedTokenAddress(
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-      ICE_TOKEN_MINT,
-      user
+    const iceToTokenAddress = await getAssociatedTokenAddress(
+      user,
+      ICE_TOKEN_MINT
     );
     const instructions = [];
     const iceToTokenAccount = await CONNECTION.getAccountInfo(
       iceToTokenAddress
     );
+    console.log('ice', iceToTokenAccount);
     if (iceToTokenAccount === null) {
       // if destination associated token account doesn't exist, make one
       instructions.push(
@@ -71,16 +70,31 @@ export default async function handler(
           ICE_TOKEN_MINT,
           iceToTokenAddress,
           user,
-          user
+          DAO_PUBLIC_KEY
         )
       );
     }
-
+    // create NFT account if user closed NFT account
+    const nftToTokenAccount = await CONNECTION.getAccountInfo(toAta);
+    console.log('to', nftToTokenAccount);
+    if (nftToTokenAccount === null) {
+      // if destination associated token account doesn't exist, make one
+      instructions.push(
+        Token.createAssociatedTokenAccountInstruction(
+          ASSOCIATED_TOKEN_PROGRAM_ID,
+          TOKEN_PROGRAM_ID,
+          mintAddress,
+          toAta,
+          user,
+          DAO_PUBLIC_KEY
+        )
+      );
+    }
     // send ICE
     instructions.push(
       Token.createTransferCheckedInstruction(
         TOKEN_PROGRAM_ID,
-        iceFromTokenAccount.address,
+        DAO_ICE_TOKEN_ADDRESS,
         ICE_TOKEN_MINT,
         iceToTokenAddress,
         DAO_PUBLIC_KEY,
@@ -93,9 +107,9 @@ export default async function handler(
     instructions.push(
       Token.createTransferCheckedInstruction(
         TOKEN_PROGRAM_ID,
-        new PublicKey(nftFromTokenAddress),
-        new PublicKey(mint),
-        new PublicKey(nftToTokenAddress),
+        fromAta,
+        mintAddress,
+        toAta,
         DAO_PUBLIC_KEY,
         [],
         1,
@@ -109,9 +123,16 @@ export default async function handler(
     }).add(...instructions);
     // requires user to sign
     transaction.partialSign(daoKeypair);
-    const txMessage = transaction.serialize({
-      requireAllSignatures: false,
-    });
+    const txMessage = transaction
+      .serialize({
+        requireAllSignatures: false,
+      })
+      .toString('base64');
+    // const txMessage = transaction.serializeMessage();
+    // const daoSignature = Buffer.from(
+    //   nacl.sign.detached(new Uint8Array(txMessage), daoKeypair.secretKey)
+    // );
+    // return res.status(200).json({ txMessage, daoSignature });
     return res.status(200).json({ txMessage });
   } catch (err) {
     console.error(err);
