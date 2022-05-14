@@ -34,6 +34,9 @@ export const DAO_PUBLIC_KEY = new PublicKey(
 export const DAO_ICE_TOKEN_ADDRESS = new PublicKey(
   '7bYLu5xNTsz1MaXnN4b3AzV5xYH7T2mDLGfzE6tChPFG'
 );
+export const BURN_ICE_TOKEN_ADDRESS = new PublicKey(
+  'BZAdaZ9SjvRW1pyeSqBj3DbZbJWLoKhh7nwE9x1HA5AW'
+);
 export const METAPLEX_TOKEN_PROGRAM_ID = new PublicKey(
   'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 );

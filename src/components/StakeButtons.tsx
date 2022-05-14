@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Diamond, IceRechargePrice } from '../../pages/api/types';
 import {
   DAO_ICE_TOKEN_ADDRESS,
+  BURN_ICE_TOKEN_ADDRESS,
   DAO_PUBLIC_KEY,
   ICE_TOKEN_MINT,
 } from '../config';
@@ -94,7 +95,7 @@ export default function StakeButtons(props: any) {
                 TOKEN_PROGRAM_ID,
                 fromAta,
                 ICE_TOKEN_MINT,
-                DAO_ICE_TOKEN_ADDRESS,
+                BURN_ICE_TOKEN_ADDRESS,
                 publicKey,
                 [],
                 rechargeCost * 1e9,
