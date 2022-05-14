@@ -23,7 +23,7 @@ export default async function handler(
       bs58.encode(signature.data),
     ]);
     let retries = 0;
-    let MAX_RETRIES = 3;
+    let MAX_RETRIES = 5;
 
     while (retries < MAX_RETRIES) {
       try {
