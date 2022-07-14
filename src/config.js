@@ -11,7 +11,7 @@ const config = {
   },
   'mainnet-beta': {
     rpcUrl:
-      'https://summer-wispy-frost.solana-mainnet.quiknode.pro/46b6a945d633bab9cac87a2f4771e395448811ad/',
+      'https://summer-wispy-frost.solana-mainnet.quiknode.pro/0dc49a4d7829b3005c3e58b88cb845ba012126a0/',
     iceTokenMintPublicKey: 'icex2Fy2KtXjfiAAUEHLPHu7XKDLvwiyVUPP9PNpSkF',
     serpentsDb: 'InfinitySerpents',
     serpentsCollection: 'Serpents',
